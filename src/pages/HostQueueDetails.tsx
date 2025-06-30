@@ -1,0 +1,353 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, collection, query, where, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
+import type { Queue, Customer } from '../firebase/schema';
+
+type QueueCustomer = {
+  id: string;
+  data: Customer;
+};
+
+export default function HostQueueDetails() {
+  const { queueId } = useParams<{ queueId: string; }>();
+  const navigate = useNavigate();
+  const [queue, setQueue] = useState<{ id: string, data: Queue; } | null>(null);
+  const [customers, setCustomers] = useState<QueueCustomer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isQueueActive, setIsQueueActive] = useState(false);
+
+  const avgWaitTime = useMemo(() => queue?.data.waitTimes ? queue?.data.waitTimes.reduce((a, i) => a + i, 0) / queue?.data.waitTimes.length : null, [queue?.data.waitTimes])
+  console.log({avgWaitTime})
+
+  // Set up real-time listeners for queue and customers
+  useEffect(() => {
+    if (!queueId) return;
+
+    setIsLoading(true);
+
+    // Set up listener for queue document
+    const queueRef = doc(db, "queues", queueId);
+    const unsubscribeQueue = onSnapshot(queueRef,
+      (doc) => {
+        console.log("ran");
+        if (doc.exists()) {
+          const queueData = {
+            id: doc.id,
+            data: doc.data() as Queue
+          };
+          setQueue(queueData);
+          setIsQueueActive(queueData.data.isActive);
+          setIsLoading(false);
+        } else {
+          setError("Queue not found.");
+          setIsLoading(false);
+        }
+      },
+      (err) => {
+        console.error("Error listening to queue:", err);
+        setError("Failed to load queue data.");
+        setIsLoading(false);
+      }
+    );
+
+    // Set up listener for customers collection
+    const customersRef = collection(db, "queues", queueId, "customers");
+    const customersQuery = query(
+      customersRef,
+      where("status", "in", ["waiting", "notified"]),
+    );
+
+
+    const unsubscribeCustomers = onSnapshot(customersQuery,
+      (snapshot) => {
+        const customersList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data() as Customer
+        }))
+          .sort((a, b) => a.data.position - b.data.position);
+        setCustomers(customersList);
+      },
+      (err) => {
+        console.error("Error listening to customers:", err);
+        setError("Failed to load customers data.");
+      }
+    );
+
+    // Clean up listeners when component unmounts
+    return () => {
+      unsubscribeQueue();
+      unsubscribeCustomers();
+    };
+  }, [queueId]);
+
+  // Toggle queue active state
+  const toggleQueueStatus = async () => {
+    if (!queueId || !queue) return;
+
+    try {
+      await updateDoc(doc(db, "queues", queueId), {
+        isActive: !isQueueActive
+      });
+      // No need to manually update state or refetch data
+      // The onSnapshot listener will automatically update the UI
+    } catch (err) {
+      console.error("Error updating queue status:", err);
+      setError("Failed to update queue status.");
+    }
+  };
+
+  // Mark customer as served and remove from queue
+  const serveCustomer = async (customer: QueueCustomer) => {
+    if (!queueId || !queue) return;
+
+    try {
+      const customerRef = doc(db, "queues", queueId, "customers", customer.id);
+      await updateDoc(customerRef, {
+        status: "served",
+        servedAt: serverTimestamp()
+      });
+
+      const queueRef = doc(db, "queues", queueId)
+      await updateDoc(queueRef, {
+        waitTimes: [...(queue.data.waitTimes || []), (new Date()).getTime() - customer.data.joinedAt.toDate().getTime()]
+      })
+
+    } catch (err) {
+      console.error("Error serving customer:", err);
+      setError("Failed to update customer status.");
+    }
+  };
+
+  // Mark customer as notified
+  const notifyCustomer = async (customerId: string) => {
+    if (!queueId) return;
+
+    try {
+      const customerRef = doc(db, "queues", queueId, "customers", customerId);
+      await updateDoc(customerRef, {
+        notified: true,
+        status: "notified",
+        notifiedAt: serverTimestamp()
+      });
+      // No need to manually refresh - listeners will handle it
+    } catch (err) {
+      console.error("Error notifying customer:", err);
+      setError("Failed to notify customer.");
+    }
+  };
+
+  // Generate shareable join link
+  const getJoinLink = () => {
+    return `${window.location.origin}/join/${queueId}`;
+  };
+
+  // Copy join link to clipboard
+  const copyJoinLink = () => {
+    navigator.clipboard.writeText(getJoinLink());
+    alert("Join link copied to clipboard!");
+  };
+
+  // Get wait time in minutes
+  const getWaitTimeDisplay = (customer: QueueCustomer) => {
+    if (!customer) return "Unknown";
+    console.log(customer);
+    const joinTime = customer.data.joinedAt.toDate();
+    const now = new Date();
+    const waitMinutes = Math.floor((now.getTime() - joinTime.getTime()) / 60000);
+
+    if (waitMinutes < 1) return "Just now";
+    if (waitMinutes === 1) return "1 minute";
+    return `${waitMinutes} minutes`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !queue) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+          <h2 className="text-xl font-bold text-red-600">Error</h2>
+          <p className="mt-2">{error || "Queue not found"}</p>
+          <button
+            onClick={() => navigate('/my-queues')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Back to My Queues
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header with back button */}
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => navigate('/my-queues')}
+            className="mr-4 flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="ml-1">Back</span>
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 flex-1">{queue.data.queueName}</h1>
+        </div>
+
+        {/* Queue status and actions */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between">
+              <div>
+                <div className="flex items-center">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isQueueActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                    {isQueueActive ? 'Active' : 'Inactive'}
+                  </span>
+                  <span className="ml-4 text-gray-600">{customers.length} in queue</span>
+                </div>
+                <p className="mt-2 text-sm text-gray-600">
+                  Created: {queue.data.createdAt?.toDate().toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Names required: {queue.data.requireCustomerName ? 'Yes' : 'No'}
+                </p>
+              </div>
+
+              <div className="mt-4 md:mt-0 space-x-4">
+                <button
+                  onClick={toggleQueueStatus}
+                  className={`px-4 py-2 text-white rounded-md ${isQueueActive
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-green-600 hover:bg-green-700'
+                    }`}
+                >
+                  {isQueueActive ? 'Deactivate Queue' : 'Activate Queue'}
+                </button>
+                <button
+                  onClick={copyJoinLink}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Copy Join Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Queue stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900">Current Queue Size</h3>
+            <p className="text-3xl font-bold text-blue-600 mt-2">{customers.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900">Average Wait Time</h3>
+            <p className="text-3xl font-bold text-blue-600 mt-2">
+              {avgWaitTime
+                ? `${Math.floor(avgWaitTime / (1000 * 60))} min`
+                : 'N/A'}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900">Est. Total Time</h3>
+            <p className="text-3xl font-bold text-blue-600 mt-2">
+              {avgWaitTime
+                ? `${Math.floor(avgWaitTime / (1000 * 60)) * customers.length} min`
+                : 'N/A'}
+            </p>
+          </div>
+        </div>
+
+        {/* Customers list */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Customers in Queue</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Manage customers and their status in the queue.
+            </p>
+          </div>
+
+          {customers.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-600">No customers in the queue.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Position
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Wait Time
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {customers.map((customer, index) => (
+                    <tr key={customer.id} className={index === 0 ? 'bg-blue-50' : ''}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {customer.data.position}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {customer.data.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {getWaitTimeDisplay(customer)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.data.status === 'notified'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                          }`}>
+                          {customer.data.status === 'notified' ? 'Notified' : 'Waiting'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {customer.data.status === 'waiting' && index === 0 && (
+                          <button
+                            onClick={() => notifyCustomer(customer.id)}
+                            className="mr-2 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
+                          >
+                            Notify
+                          </button>
+                        )}
+                        <button
+                          onClick={() => serveCustomer(customer)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200"
+                        >
+                          Serve
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
