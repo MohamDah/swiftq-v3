@@ -9,6 +9,7 @@ import {
   type User,
 } from "firebase/auth";
 import { app } from "./config";
+import { redirect } from "react-router-dom";
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
@@ -64,6 +65,9 @@ export const onAuthChange = (callback: (user: User | null) => void) => {
 };
 
 // Get current user
-export const getCurrentUser = (): User | null => {
+export const CheckAuth = (): User | null => {
+  if (!auth.currentUser) {
+    redirect("/login")
+  }
   return auth.currentUser;
 };

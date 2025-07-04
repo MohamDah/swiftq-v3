@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { updateProfile } from 'firebase/auth';
-import { registerWithEmail } from '../firebase/auth';
+import { registerWithEmail } from '../../firebase/auth';
 
 export default function Signup() {
   const [name, setName] = useState('');

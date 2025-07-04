@@ -1,34 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { deleteQueue, getHostQueues, getQueueCustomers } from '../firebase/services/queues';
-import type { QueueItem } from '../firebase/schema';
+import { useState } from 'react';
+import { Link, useLoaderData } from 'react-router-dom';
+import { deleteQueue } from '../../firebase/services/queues';
+import type { QueueItem } from '../../firebase/schema';
+
+type LoaderData = {
+  queues: (QueueItem & {count: number})[]
+}
 
 export default function HostQueues() {
-  const [queues, setQueues] = useState<(QueueItem & {count: number})[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const loaderData = useLoaderData() as LoaderData
+  const [queues, setQueues] = useState(loaderData.queues);
 
-  useEffect(() =>{
-    async function getQueues() {
-      try {
-        const data = await getHostQueues()
-        const finalQueues = await Promise.all(data.map(async (qu) => ({
-          ...qu,
-          count: (await getQueueCustomers(qu.id)).length
-        })))
-        console.log(data)
-        setQueues(finalQueues)
-      } catch (err: unknown) {
-        setError(err as string)
-      }
-      setLoading(false)
-    }
-    getQueues()
-  }, [])
-  
   const handleDelete = async (queueId: string) => {
-    // This would need to be implemented with the appropriate Firebase service
-    // For now, we're just showing the UI
     await deleteQueue(queueId)
     setQueues(queues.filter(i => i.id !== queueId))
   };
@@ -46,18 +29,8 @@ export default function HostQueues() {
           </Link>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
 
-        {loading ? (
-          <div className="text-center py-10">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">Loading your queues...</p>
-          </div>
-        ) : queues.length === 0 ? (
+        {queues.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm border border-gray-200">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>

@@ -69,6 +69,7 @@ export const getHostQueues = async (): Promise<{ id: string, data: Queue; }[]> =
     throw error;
   }
 };
+// Public functions - no auth required
 
 export const getQueueCustomers = async (queueId: string): Promise<{ id: string, data: Customer; }[]> => {
   const customersRef = collection(db, "queues", queueId, "customers");
@@ -87,7 +88,6 @@ export const getQueueCustomers = async (queueId: string): Promise<{ id: string, 
 
 };
 
-// Public functions - no auth required
 export const getQueue = async (queueId: string): Promise<{ id: string, data: Queue; } | null> => {
   try {
     const docRef = doc(db, "queues", queueId);
@@ -219,7 +219,6 @@ export const getCustomerPosition = async (queueId: string, customerId: string): 
     const customersRef = collection(db, "queues", queueId, "customers");
     const customersQuery = query(
       customersRef,
-      where("position", "<", customerData.position),
       where("status", "in", ["waiting", "notified"])
     );
 

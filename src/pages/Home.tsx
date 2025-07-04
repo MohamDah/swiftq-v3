@@ -40,7 +40,7 @@ export default function Home() {
       
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-blue-800 mb-4">Queue Management System</h1>
+          <h1 className="text-4xl font-bold text-blue-800 mb-4">SwiftQ</h1>
           <p className="text-lg text-gray-600">
             A simple and efficient way to manage your queues and improve customer experience
           </p>
@@ -158,7 +158,7 @@ export default function Home() {
 
       <footer className="bg-gray-100 mt-16 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-gray-600">© 2025 Queue Management System. All rights reserved.</p>
+          <p className="text-gray-600">© 2025 SwiftQ. All rights reserved.</p>
         </div>
       </footer>
     </div>

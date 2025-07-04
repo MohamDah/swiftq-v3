@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, collection, query, where, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase/config';
-import type { Queue, Customer } from '../firebase/schema';
+import { db } from '../../../firebase/config';
+import type { Queue, Customer } from '../../../firebase/schema';
+import { formatDistance } from 'date-fns';
 
 type QueueCustomer = {
   id: string;
@@ -18,8 +19,8 @@ export default function HostQueueDetails() {
   const [error, setError] = useState<string | null>(null);
   const [isQueueActive, setIsQueueActive] = useState(false);
 
+  // Calculate average time
   const avgWaitTime = useMemo(() => queue?.data.waitTimes ? queue?.data.waitTimes.reduce((a, i) => a + i, 0) / queue?.data.waitTimes.length : null, [queue?.data.waitTimes])
-  console.log({avgWaitTime})
 
   // Set up real-time listeners for queue and customers
   useEffect(() => {
@@ -155,11 +156,9 @@ export default function HostQueueDetails() {
     console.log(customer);
     const joinTime = customer.data.joinedAt.toDate();
     const now = new Date();
-    const waitMinutes = Math.floor((now.getTime() - joinTime.getTime()) / 60000);
 
-    if (waitMinutes < 1) return "Just now";
-    if (waitMinutes === 1) return "1 minute";
-    return `${waitMinutes} minutes`;
+    const duration = formatDistance(now, joinTime)
+    return duration
   };
 
   if (isLoading) {
@@ -255,15 +254,15 @@ export default function HostQueueDetails() {
             <h3 className="text-lg font-medium text-gray-900">Average Wait Time</h3>
             <p className="text-3xl font-bold text-blue-600 mt-2">
               {avgWaitTime
-                ? `${Math.floor(avgWaitTime / (1000 * 60))} min`
+                ? `${formatDistance(new Date(Date.now() - avgWaitTime), new Date())}`
                 : 'N/A'}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-medium text-gray-900">Est. Total Time</h3>
             <p className="text-3xl font-bold text-blue-600 mt-2">
-              {avgWaitTime
-                ? `${Math.floor(avgWaitTime / (1000 * 60)) * customers.length} min`
+              {avgWaitTime && customers.length
+                ? `${formatDistance(new Date(Date.now() - (avgWaitTime * customers.length)), new Date())}`
                 : 'N/A'}
             </p>
           </div>

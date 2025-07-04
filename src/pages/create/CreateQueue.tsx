@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createQueue } from '../firebase/services/queues';
+import { createQueue } from '../../firebase/services/queues';
 
 export default function CreateQueue() {
   const [queueName, setQueueName] = useState('');

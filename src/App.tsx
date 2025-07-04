@@ -2,83 +2,106 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import HostQueues from "./pages/HostQueues";
 import SuspLoader from "./components/SuspLoader";
-import HostQueueDetails from "./pages/HostQueueDetails";
-import JoinQueue from "./pages/JoinQueue";
+import ErrorPage from "./components/ErrorPage";
+
+import { JoinQueueLoader } from "./pages/join/[queueId]/loader";
+import { HostQueueLoader } from "./pages/my-queues/loader";
+
 
 // Lazy loading components for better performance
 const Home = lazy(() => import("./pages/Home"));
-const CreateQueue = lazy(() => import("./pages/CreateQueue"));
-const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
-// const HostDashboard = lazy(() => import("./pages/HostDashboard"));
-// const QueueDetails = lazy(() => import("./pages/QueueDetails"));
-// const JoinQueue = lazy(() => import("./pages/JoinQueue"));
-// const CustomerView = lazy(() => import("./pages/CustomerView"));
+// Host
+const CreateQueue = lazy(() => import("./pages/create/CreateQueue"));
+const HostQueues = lazy(() => import("./pages/my-queues/HostQueues"));
+const HostQueueDetails = lazy(() => import("./pages/my-queues/[queueId]/HostQueueDetails"));
+// Customer
+const JoinQueue = lazy(() => import("./pages/join/[queueId]/JoinQueue"));
+const CustomerView = lazy(() => import("./pages/queue/[queueId]/customer/[customerId]/CustomerView"));
+// Auth
+const Login = lazy(() => import("./pages/login/Login"));
+const Signup = lazy(() => import("./pages/register/Signup"));
 
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Suspense fallback={<SuspLoader />}>
-      <Home />
-    </Suspense>
-  },
-  {
-    path: "/create",
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<SuspLoader />}>
-          <CreateQueue />
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "/",
+        element: <Suspense fallback={<SuspLoader />}>
+          <Home />
         </Suspense>
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: "/my-queues",
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<SuspLoader />}>
-          <HostQueues />
-        </Suspense>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/my-queues/:queueId",
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<SuspLoader />}>
-          <HostQueueDetails />
-        </Suspense>
-      </ProtectedRoute>
-    ),
-  },
+      },
+      // Host Views
+      {
+        path: "/create",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<SuspLoader />}>
+              <CreateQueue />
+            </Suspense>
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "/my-queues",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<SuspLoader />}>
+              <HostQueues />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+        loader: HostQueueLoader
+      },
+      {
+        path: "/my-queues/:queueId",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<SuspLoader />}>
+              <HostQueueDetails />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
 
-  {
-    path: "/join/:queueId",
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<SuspLoader />}>
-          <JoinQueue />
-        </Suspense>
-      </ProtectedRoute>
-    ),
-  },
+      // Customer Views
+      {
+        path: "/join/:queueId",
+        element: (
+          <Suspense fallback={<SuspLoader />}>
+            <JoinQueue />
+          </Suspense>
+        ),
+        loader: JoinQueueLoader
+      },
+      {
+        path: "/queue/:queueId/customer/:customerId",
+        element: (
+          <Suspense fallback={<SuspLoader />}>
+            <CustomerView />
+          </Suspense>
+        ),
+      },
 
-  {
-    path: "/login",
-    element: <Suspense fallback={<SuspLoader />}>
-      <Login />
-    </Suspense>
-  },
-  {
-    path: "/register",
-    element: <Suspense fallback={<SuspLoader />}>
-      <Signup />
-    </Suspense>
-  },
+
+
+      // Auth Views
+      {
+        path: "/login",
+        element: <Suspense fallback={<SuspLoader />}>
+          <Login />
+        </Suspense>
+      },
+      {
+        path: "/register",
+        element: <Suspense fallback={<SuspLoader />}>
+          <Signup />
+        </Suspense>
+      },
+    ]
+  }
 ]);
 function App() {
 

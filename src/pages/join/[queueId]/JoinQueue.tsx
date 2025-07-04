@@ -1,45 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getQueue, getQueueCustomers, joinQueue } from "../firebase/services/queues";
-import { type CustomerItem, type Queue } from "../firebase/schema";
+import React, { useState } from "react";
+import { useParams, useNavigate, useLoaderData } from "react-router-dom";
+import { joinQueue } from "../../../firebase/services/queues";
+import { type CustomerItem, type Queue } from "../../../firebase/schema";
+
+type LoaderData = {
+  queue: { id: string, data: Queue };
+  prevPositions: CustomerItem[];
+};
 
 export default function JoinQueue() {
   const { queueId } = useParams<{ queueId: string }>();
   const navigate = useNavigate();
-  const [queueData, setQueueData] = useState<Queue>();
-  const [prevPositions, setPrevPositions] = useState<CustomerItem[]>([])
+  const {queue, prevPositions} = useLoaderData() as LoaderData
+  const queueData = queue.data
+
   const [customerName, setCustomerName] = useState("");
-  const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let allPrevPoses = JSON.parse(localStorage.getItem("queue_history") || "null") as Record<"customerId" | "joinedAt" | "queueId" | "queueName", string>[] || []
-    allPrevPoses = allPrevPoses.filter(i => i.queueId === queueId)
-    const fetchQueueData = async () => {
-      if (!queueId) return;
-      
-      try {
-        const [queue, customers = []] = await Promise.all([getQueue(queueId), getQueueCustomers(queueId)]);
-        if (!queue) {
-          setError("Queue not found");
-          return;
-        }
-        
-        setQueueData(queue.data);
-        // Check if the positions are active and they are the user
-        setPrevPositions(customers.filter(i => ["waiting", "notified"].includes(i.data.status) && allPrevPoses.some(j => i.id === j.customerId)))
-      } catch (err) {
-        console.error("Error fetching queue:", err);
-        setError("Failed to load queue information");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchQueueData();
-  }, [queueId]);
 
   const handleJoinQueue = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,9 +50,6 @@ export default function JoinQueue() {
     navigate(`/queue/${queueId}/customer/${customerId}`);
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
 
   if (error || !queueData) {
     return (
