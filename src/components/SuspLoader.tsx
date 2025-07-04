@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function SuspLoader() {
   const [progress, setProgress] = useState(0);
