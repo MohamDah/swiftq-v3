@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, collection, query, where, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase/config';
 import type { Queue, Customer } from '../../../firebase/schema';
@@ -239,6 +239,12 @@ export default function HostQueueDetails() {
                 >
                   Copy Join Link
                 </button>
+                <Link
+                  to={`/qr/${queueId}`}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  View QR Code
+                </Link>
               </div>
             </div>
           </div>
