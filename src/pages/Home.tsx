@@ -1,168 +1,118 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
-import { useRef } from 'react';
+import logoFull from "../assets/logoFull.png";
 
 export default function Home() {
   const handleSignOut = () => {
     logout()
   };
   const {currentUser} = useAuth()
-  const idInputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Sign Out Button (top-right corner) */}
-      <div className="absolute top-4 right-4 space-x-2">
-        {currentUser
-        ?
-        <>
-        <Link
-        to="/my-queues"
-        className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition duration-200"
-        >
-          My Queues
-        </Link>
-        <button
-        onClick={handleSignOut}
-        className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition duration-200"
-        >
-          Sign Out
-        </button>
-        </>
-        :
-        <Link
-        to="/login"
-        className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition duration-200"
-        >
-          Log In
-        </Link>
-        }
-      </div>
-      
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-blue-800 mb-4">SwiftQ</h1>
-          <p className="text-lg text-gray-600">
-            A simple and efficient way to manage your queues and improve customer experience
-          </p>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="container mx-auto p-4 flex justify-between items-center">
+        <div className="flex items-center">
+          <img src={logoFull} className='max-h-16' />
         </div>
-
-        <div className="flex flex-col md:flex-row gap-8 justify-center">
-          <div className="bg-white p-8 rounded-xl shadow-lg flex-1">
-            <h2 className="text-2xl font-bold text-blue-700 mb-4">Create a Queue</h2>
-            <p className="text-gray-600 mb-6">
-              Are you a business or service provider? Create a new queue to manage your customers efficiently.
-            </p>
-            <ul className="mb-8 space-y-2">
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>Manage customer flow</span>
-              </li>
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>Reduce perceived wait times</span>
-              </li>
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>Improve customer satisfaction</span>
-              </li>
-            </ul>
-            <Link 
-              to="/create" 
-              className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium rounded-lg transition duration-200"
+        {currentUser ? (
+          <div className="flex gap-2">
+            <Link to="/my-queues">
+              <button className="bg-primary px-6 py-2 rounded-full font-medium">My Queues</button>
+            </Link>
+            <button 
+              onClick={handleSignOut}
+              className="bg-white border border-red-500 text-red-500 px-6 py-2 rounded-full font-medium hover:bg-red-50"
             >
-              Create Queue
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link to="/login">
+            <button className="bg-primary px-6 py-2 rounded-full font-medium">Login</button>
+          </Link>
+        )}
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1">
+        <section className="container mx-auto text-center py-16 px-4">
+          <div className="flex justify-center items-center mb-4">
+            <img src={logoFull} />
+          </div>
+          <h3 className="text-3xl font-bold mb-2">No More Waiting in Line</h3>
+          <p className="text-gray-500 text-xl max-w-2xl mx-auto mb-10">
+            SwiftQ lets you join or manage queues digitally, and wait nearby, not in a crowd.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link to="/join/1234">
+              <button className="bg-primary px-8 py-3 rounded-full font-medium">Join a Queue</button>
+            </Link>
+            <Link to="/create">
+              <button className="bg-primary px-8 py-3 rounded-full font-medium">Create a Queue</button>
             </Link>
           </div>
+        </section>
 
-          <div className="bg-white p-8 rounded-xl shadow-lg flex-1">
-            <h2 className="text-2xl font-bold text-blue-700 mb-4">Join a Queue</h2>
-            <p className="text-gray-600 mb-6">
-              Need service? Join an existing queue using a QR code or queue ID provided by the business.
-            </p>
-            <ul className="mb-8 space-y-2">
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>Skip physical waiting lines</span>
-              </li>
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>Receive notifications when it's your turn</span>
-              </li>
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-green-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                <span>See estimated wait time</span>
-              </li>
-            </ul>
-            <div className="space-y-4">
-              <input
-                ref={idInputRef}
-                type="text"
-                placeholder="Enter Queue ID"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button 
-                className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium rounded-lg transition duration-200"
-                onClick={() => navigate(`/join/${idInputRef.current?.value}`)}
-              >
-                Join Queue
-              </button>
-              <p className="text-center text-gray-500 text-sm">or</p>
-              <button 
-                className="block w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 text-center font-medium rounded-lg transition duration-200"
-                onClick={() => alert('QR scan feature will be implemented soon!')}
-              >
-                Scan QR Code
-              </button>
+        {/* How It Works Section */}
+        <section className="bg-primary py-16">
+          <div className="container mx-auto px-4">
+            <h3 className="text-3xl font-bold text-center mb-12">How It Works</h3>
+
+            <div className="max-w-3xl mx-auto space-y-8">
+              {/* Step 1 */}
+              <div className="bg-white rounded-full p-6 flex items-center">
+                <div className="bg-gray-200 rounded-full w-16 h-16 flex items-center justify-center mr-6">
+                  <span className="text-4xl font-bold">1</span>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold">Create or Join</h4>
+                  <p className="text-gray-700">Businesses create queues. Customers join with a QR code or ID.</p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-white rounded-full p-6 flex items-center">
+                <div className="bg-gray-200 rounded-full w-16 h-16 flex items-center justify-center mr-6">
+                  <span className="text-4xl font-bold">2</span>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold">Wait Virtually</h4>
+                  <p className="text-gray-700">No need to physically wait in line. Do other things while you wait.</p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-white rounded-full p-6 flex items-center">
+                <div className="bg-gray-200 rounded-full w-16 h-16 flex items-center justify-center mr-6">
+                  <span className="text-4xl font-bold">3</span>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold">Get Notified</h4>
+                  <p className="text-gray-700">Receive a notification when it's your turn to be served.</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+      </main>
 
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-bold text-blue-800 mb-6">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-blue-600">1</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Create or Join</h3>
-              <p className="text-gray-600">Businesses create queues. Customers join with a QR code or ID.</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-blue-600">2</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Wait Virtually</h3>
-              <p className="text-gray-600">No need to physically wait in line. Do other things while you wait.</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-blue-600">3</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Get Notified</h3>
-              <p className="text-gray-600">Receive a notification when it's your turn to be served.</p>
-            </div>
-          </div>
+      {/* Footer */}
+      <footer className="bg-primary py-8">
+        <div className="container mx-auto flex justify-center gap-8">
+          <Link to="/about">
+            <button className="bg-white px-6 py-2 rounded-full">About Us</button>
+          </Link>
+          <Link to="/contact">
+            <button className="bg-white px-6 py-2 rounded-full">Contact Us</button>
+          </Link>
+          <Link to="/privacy">
+            <button className="bg-white px-6 py-2 rounded-full">Privacy Policy</button>
+          </Link>
         </div>
-      </div>
-
-      <footer className="bg-gray-100 mt-16 py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-gray-600">© 2025 SwiftQ. All rights reserved.</p>
+        <div className="text-center mt-6">
+          <p>© 2025 SwiftQ. All rights reserved.</p>
         </div>
       </footer>
     </div>
