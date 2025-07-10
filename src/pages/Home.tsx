@@ -1,12 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
+import { useRef } from 'react';
 
 export default function Home() {
   const handleSignOut = () => {
     logout()
   };
   const {currentUser} = useAuth()
+  const idInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -107,13 +110,14 @@ export default function Home() {
             </ul>
             <div className="space-y-4">
               <input
+                ref={idInputRef}
                 type="text"
                 placeholder="Enter Queue ID"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button 
                 className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium rounded-lg transition duration-200"
-                onClick={() => alert('Join queue feature will be implemented soon!')}
+                onClick={() => navigate(`/join/${idInputRef.current?.value}`)}
               >
                 Join Queue
               </button>

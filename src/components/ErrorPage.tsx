@@ -6,12 +6,13 @@ export default function ErrorPage() {
   
   let errorMessage: string;
   let errorStatus: number | null = null;
+  console.log(error)
   
   // Handle different types of errors
   if (isRouteErrorResponse(error)) {
     // This is a route error response from React Router
     errorStatus = error.status;
-    errorMessage = error.statusText || error.data?.message || "Something went wrong";
+    errorMessage = error.statusText || error.data || "Something went wrong";
   } else if (error instanceof Error) {
     // This is a standard JavaScript Error object
     errorMessage = error.message;

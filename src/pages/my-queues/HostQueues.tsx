@@ -1,27 +1,37 @@
 import { useState } from 'react';
-import { Link, useLoaderData } from 'react-router-dom';
+import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { deleteQueue } from '../../firebase/services/queues';
 import type { QueueItem } from '../../firebase/schema';
 
 type LoaderData = {
-  queues: (QueueItem & {count: number})[]
-}
+  queues: (QueueItem & { count: number; })[];
+};
 
 export default function HostQueues() {
-  const loaderData = useLoaderData() as LoaderData
+  const navigate = useNavigate()
+  const loaderData = useLoaderData() as LoaderData;
   const [queues, setQueues] = useState(loaderData.queues);
 
   const handleDelete = async (queueId: string) => {
-    await deleteQueue(queueId)
-    setQueues(queues.filter(i => i.id !== queueId))
+    await deleteQueue(queueId);
+    setQueues(queues.filter(i => i.id !== queueId));
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => navigate('/')}
+          className="mr-4 mb-4 flex items-center text-gray-600 hover:text-gray-900"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span className="ml-1">Back</span>
+        </button>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">My Queues</h1>
-          <Link 
+          <Link
             to="/create"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
@@ -60,7 +70,7 @@ export default function HostQueues() {
                         <div className="ml-4">
                           <h3 className="text-lg font-medium text-gray-900">{queue.data.queueName}</h3>
                           <p className="text-sm text-gray-500">
-                            Created {queue.data.createdAt.toDate().toLocaleDateString()} • 
+                            Created {queue.data.createdAt.toDate().toLocaleDateString()} •
                             {queue.data.requireCustomerName ? " Names required" : " Names not required"}
                           </p>
                         </div>

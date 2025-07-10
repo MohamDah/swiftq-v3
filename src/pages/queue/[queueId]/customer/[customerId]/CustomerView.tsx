@@ -80,6 +80,7 @@ export default function CustomerView() {
     const customerUnsubscribe = onSnapshot(
       doc(db, 'queues', queueId, 'customers', customerId),
       (snapshot) => {
+        // TODO: FIGURE OUT WHY REALTIME THINGY HERE DOESN'T WORK
         if (snapshot.exists()) {
           const data = snapshot.data() as Customer;
           setCustomer(data);
@@ -100,6 +101,8 @@ export default function CustomerView() {
         where('status', 'in', ['waiting', 'notified']),
       ),
       async (snapshot) => {
+        console.log("ran", snapshot)
+
         try {
           // Recalculate total customers ahead
           if (customer) {
@@ -152,7 +155,7 @@ export default function CustomerView() {
       customersAheadUnsubscribe();
       queueUnsubscribe();
     };
-  }, [queueId, customerId, customer, queue, loading]);
+  }, [queueId, customerId, loading]);
 
   // Helper function to format status for display
   const getStatusDisplay = () => {

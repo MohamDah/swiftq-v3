@@ -33,7 +33,8 @@ export async function JoinQueueLoader({ params }: LoaderFunctionArgs) {
       prevPositions
     };
   } catch (error) {
-    console.error("Error in join queue loader:", error);
-    throw new Response("Failed to load queue information", { status: 500 });
+    console.log("Error in join queue loader:", error);
+    throw error
+    // throw new Response("Failed to load queue information", { status: 500 });
   }
 }
