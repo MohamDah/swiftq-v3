@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate, useLoaderData } from "react-router-dom";
 import { joinQueue } from "../../../firebase/services/queues";
 import { type CustomerItem, type Queue } from "../../../firebase/schema";
+import rays from "../../../assets/rays.png"
 
 type LoaderData = {
   queue: { id: string, data: Queue };

@@ -1,0 +1,59 @@
+/* CSS Reset for the QR Scanner elements only */
+.qr-scanner-isolation,
+.qr-scanner-isolation * {
+  all: revert;
+  box-sizing: border-box;
+}
+
+/* Ensure the scanner has good visibility */
+#html5qr-code-full-region {
+  width: 100%;
+  min-height: 300px;
+  background-color: #fff;
+  position: relative;
+  padding: 10px;
+}
+
+/* Fix the header section */
+#html5qr-code-full-region > div:first-child {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Make the camera selection more visible */
+#html5qr-code-full-region select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 5px 0;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Improve button visibility */
+#html5qr-code-full-region button {
+  background-color: #8BC34A; /* Your primary color */
+  color: black;
+  border: none;
+  border-radius: 999px; /* Rounded full */
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  margin: 5px;
+}
+
+/* Ensure the video container is visible */
+#html5qr-code-full-region div video {
+  height: auto !important;
+  max-height: 250px;
+  width: 100% !important;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Hide some unnecessary elements */
+#html5qr-code-full-region > div:first-child > div:last-child {
+  display: none; /* Hide the file selection option */
+}
