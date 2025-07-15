@@ -14,7 +14,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../../../firebase/config';
 import type { Queue, Customer } from '../../../../../firebase/schema';
-import { formatDistance } from 'date-fns';
 
 export default function CustomerView() {
   const { queueId, customerId } = useParams<{ queueId: string; customerId: string; }>();

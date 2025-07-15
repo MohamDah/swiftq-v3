@@ -42,7 +42,7 @@ export default function Layout() {
               <button className="bg-primary px-6 py-1 rounded-full font-bold shadow-lg shadow-black/30">Login</button>
             </Link>
         ) : (
-          <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25'>
+          <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2.5 rounded-full shadow-lg shadow-black/25'>
             <MenuIcon />
           </button>
         )}
@@ -56,7 +56,7 @@ export default function Layout() {
             setShowModal(false);
           }
         }}>
-          <div className='container flex justify-end py-7 px-4'>
+          <div className='container flex justify-end py-5 px-4'>
             <button onClick={(e) => {
               e.stopPropagation();
               setShowModal(!showModal);
