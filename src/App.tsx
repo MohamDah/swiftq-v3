@@ -63,14 +63,21 @@ const router = createBrowserRouter([
       },
       // Host Views
       {
-        path: "/create",
-        element: (
-          <ProtectedRoute>
-            <Suspense fallback={<SuspLoader />}>
-              <CreateQueue />
-            </Suspense>
-          </ProtectedRoute>
-        )
+
+        element: <CustomerLayout />,
+        children: [
+          {
+            path: "/create",
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<SuspLoader />}>
+                  <CreateQueue />
+                </Suspense>
+              </ProtectedRoute>
+            )
+          }
+        ]
+
       },
       {
         path: "/my-queues",

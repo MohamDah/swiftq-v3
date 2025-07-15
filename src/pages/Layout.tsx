@@ -20,9 +20,9 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 container mx-auto px-4 py-2 flex justify-between items-center">
+      <header className="sticky top-0 z-20 container mx-auto px-4 py-2 flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <img src={logoFull} className='max-h-16' />
+          <img src={logoFull} className='max-h-12' />
         </Link>
         {isHome ? (
           currentUser ?
@@ -42,7 +42,7 @@ export default function Layout() {
               <button className="bg-primary px-6 py-1 rounded-full font-bold shadow-lg shadow-black/30">Login</button>
             </Link>
         ) : (
-          <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2.5 rounded-full shadow-lg shadow-black/25'>
+          <button onClick={() => setShowModal(!showModal)} className='bg-primary border border-white p-2 rounded-full shadow-lg shadow-black/25'>
             <MenuIcon />
           </button>
         )}
@@ -56,11 +56,11 @@ export default function Layout() {
             setShowModal(false);
           }
         }}>
-          <div className='container flex justify-end py-5 px-4'>
+          <div className='container flex justify-end py-3 px-4'>
             <button onClick={(e) => {
               e.stopPropagation();
               setShowModal(!showModal);
-            }} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25 self-end'>
+            }} className='bg-primary p-1.5 rounded-full shadow-lg shadow-black/25 self-end border-2 border-white'>
               <XIcon />
             </button>
           </div>
@@ -71,7 +71,7 @@ export default function Layout() {
                   My Queues
                 </button>
               </Link>
-              <Link to="/create-queue" className="w-full" onClick={() => setShowModal(false)}>
+              <Link to="/create" className="w-full" onClick={() => setShowModal(false)}>
                 <button className="w-full bg-white py-3 px-4 rounded-xl shadow-lg shadow-black/25 font-semibold text-center">
                   Create New Queue
                 </button>
