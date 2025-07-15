@@ -213,8 +213,8 @@ export default function CustomerView() {
     );
   }
 
-  const etaWaitTime = Math.floor(((queue.estimatedWaitPerPerson || 0) * (position.totalAhead || 1)) / 1000 / 60)
-  
+  const etaWaitTime = Math.floor(((queue.estimatedWaitPerPerson || 0) * (position.totalAhead + 1)) / 1000 / 60);
+
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
@@ -224,21 +224,21 @@ export default function CustomerView() {
       </p>
 
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
-        <div className={`flex justify-between flex-wrap`}>
-          <h2 className="font-bold base mb-2">
+        <div className={`flex justify-around flex-wrap`}>
+          <h2 className="font-bold text-lg mb-2">
             {customer.name}
           </h2>
-          <div className="base font-bold mb-2">
+          <div className="font-bold mb-2">
             {getStatusDisplay()}
           </div>
         </div>
 
+        <div className="mt-5 flex justify-between items-center mb-2">
+          <span className='text-sm'>Your number:</span>
+          <span className="font-bold">#{position.position.toString().padStart(3, "0")}</span>
+        </div>
         {customer.status === 'waiting' && (
           <>
-            <div className="mt-5 flex justify-between items-center mb-2">
-              <span className='text-sm'>Your number:</span>
-              <span className="font-bold">{position.position.toString().padStart(3, "0")}</span>
-            </div>
             <div className="flex justify-between items-center mb-2">
               <span className='text-sm'>People ahead of you:</span>
               <span className="font-bold">{position.totalAhead}</span>
@@ -253,9 +253,11 @@ export default function CustomerView() {
         )}
 
         {customer.status === 'notified' && (
-          <div className="text-green-700 font-medium mt-2">
-            You were called at {customer.notifiedAt?.toDate().toLocaleTimeString()}
-          </div>
+          <>
+            <div className="text-green-700 font-medium mt-2">
+              You were called at {customer.notifiedAt?.toDate().toLocaleTimeString()}
+            </div>
+          </>
         )}
       </div>
 
