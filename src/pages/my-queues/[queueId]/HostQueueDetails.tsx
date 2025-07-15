@@ -111,8 +111,10 @@ export default function HostQueueDetails() {
       });
 
       const queueRef = doc(db, "queues", queueId)
+      const newWaitTimes = [...(queue.data.waitTimes || []), (new Date()).getTime() - customer.data.joinedAt.toDate().getTime()]
       await updateDoc(queueRef, {
-        waitTimes: [...(queue.data.waitTimes || []), (new Date()).getTime() - customer.data.joinedAt.toDate().getTime()]
+        waitTimes: newWaitTimes,
+        estimatedWaitPerPerson: newWaitTimes.reduce((a, i) => a + i, 0) / newWaitTimes.length 
       })
 
     } catch (err) {

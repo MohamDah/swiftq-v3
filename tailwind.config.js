@@ -10,6 +10,9 @@ export default {
         "primary": "#D5F279",
         "primary-sat": "#C3FF0380"
       },
+      fontSize: {
+        "2xs": ".7rem"
+      },
       keyframes: {
         'slide-up': {
           '0%': { transform: 'translateY(100%)' },

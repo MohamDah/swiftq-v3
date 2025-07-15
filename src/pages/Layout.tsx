@@ -20,7 +20,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 container mx-auto p-4 flex justify-between items-center">
+      <header className="sticky top-0 container mx-auto px-4 py-2 flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img src={logoFull} className='max-h-16' />
         </Link>

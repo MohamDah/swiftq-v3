@@ -8,6 +8,7 @@ import ErrorPage from "./components/ErrorPage";
 import { JoinQueueLoader } from "./pages/join/[queueId]/loader";
 import { HostQueueLoader } from "./pages/my-queues/loader";
 import Layout from "./pages/Layout";
+import CustomerLayout from "./components/CustomerLayout";
 
 
 // Lazy loading components for better performance
@@ -16,7 +17,7 @@ const Home = lazy(() => import("./pages/Home"));
 const CreateQueue = lazy(() => import("./pages/create/CreateQueue"));
 const HostQueues = lazy(() => import("./pages/my-queues/HostQueues"));
 const HostQueueDetails = lazy(() => import("./pages/my-queues/[queueId]/HostQueueDetails"));
-const QR = lazy(() => import("./pages/qr/[queueId]/QR"))
+const QR = lazy(() => import("./pages/qr/[queueId]/QR"));
 // Customer
 const JoinQueue = lazy(() => import("./pages/join/[queueId]/JoinQueue"));
 const CustomerView = lazy(() => import("./pages/queue/[queueId]/customer/[customerId]/CustomerView"));
@@ -26,6 +27,30 @@ const Signup = lazy(() => import("./pages/register/Signup"));
 
 
 const router = createBrowserRouter([
+  {
+    errorElement: <ErrorPage />,
+    element: <CustomerLayout />,
+    children: [
+      // Customer Views
+      {
+        path: "/join/:queueId",
+        element: (
+          <Suspense fallback={<SuspLoader />}>
+            <JoinQueue />
+          </Suspense>
+        ),
+        loader: JoinQueueLoader
+      },
+      {
+        path: "/queue/:queueId/customer/:customerId",
+        element: (
+          <Suspense fallback={<SuspLoader />}>
+            <CustomerView />
+          </Suspense>
+        ),
+      },
+    ]
+  },
   {
     errorElement: <ErrorPage />,
     element: <Layout />,
@@ -78,27 +103,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      
-      
-      // Customer Views
-      {
-        path: "/join/:queueId",
-        element: (
-          <Suspense fallback={<SuspLoader />}>
-            <JoinQueue />
-          </Suspense>
-        ),
-        loader: JoinQueueLoader
-      },
-      {
-        path: "/queue/:queueId/customer/:customerId",
-        element: (
-          <Suspense fallback={<SuspLoader />}>
-            <CustomerView />
-          </Suspense>
-        ),
-      },
-
 
 
       // Auth Views

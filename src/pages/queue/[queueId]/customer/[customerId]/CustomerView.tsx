@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  getQueue, 
-  getCustomerStatus, 
-  getCustomerPosition 
+import {
+  getQueue,
+  getCustomerStatus,
+  getCustomerPosition
 } from '../../../../../firebase/services/queues';
-import { 
-  doc, 
+import {
+  doc,
   onSnapshot,
   collection,
   query,
@@ -14,14 +14,15 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../../../firebase/config';
 import type { Queue, Customer } from '../../../../../firebase/schema';
+import { formatDistance } from 'date-fns';
 
 export default function CustomerView() {
-  const { queueId, customerId } = useParams<{ queueId: string; customerId: string }>();
+  const { queueId, customerId } = useParams<{ queueId: string; customerId: string; }>();
   const navigate = useNavigate();
-  
+
   const [queue, setQueue] = useState<Queue | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [position, setPosition] = useState<{ position: number; totalAhead: number; estimatedWaitTime: number | null }>({
+  const [position, setPosition] = useState<{ position: number; totalAhead: number; estimatedWaitTime: number | null; }>({
     position: 0,
     totalAhead: 0,
     estimatedWaitTime: null,
@@ -60,7 +61,7 @@ export default function CustomerView() {
         // Get position data
         const positionData = await getCustomerPosition(queueId, customerId);
         setPosition(positionData);
-        
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -80,7 +81,6 @@ export default function CustomerView() {
     const customerUnsubscribe = onSnapshot(
       doc(db, 'queues', queueId, 'customers', customerId),
       (snapshot) => {
-        // TODO: FIGURE OUT WHY REALTIME THINGY HERE DOESN'T WORK
         if (snapshot.exists()) {
           const data = snapshot.data() as Customer;
           setCustomer(data);
@@ -101,7 +101,7 @@ export default function CustomerView() {
         where('status', 'in', ['waiting', 'notified']),
       ),
       async (snapshot) => {
-        console.log("ran", snapshot)
+        console.log("ran", snapshot);
 
         try {
           // Recalculate total customers ahead
@@ -109,7 +109,7 @@ export default function CustomerView() {
             const ahead = snapshot.docs.filter(
               doc => (doc.data() as Customer).position < customer.position
             ).length;
-            
+
             setPosition(prev => ({
               ...prev,
               totalAhead: ahead,
@@ -132,7 +132,7 @@ export default function CustomerView() {
         if (snapshot.exists()) {
           const queueData = snapshot.data() as Queue;
           setQueue(queueData);
-          
+
           // Update estimated wait time if applicable
           if (queueData.estimatedWaitPerPerson) {
             setPosition(prev => ({
@@ -160,7 +160,7 @@ export default function CustomerView() {
   // Helper function to format status for display
   const getStatusDisplay = () => {
     if (!customer) return '';
-    
+
     switch (customer.status) {
       case 'notified':
         return 'It\'s your turn! Please proceed to the service point.';
@@ -177,12 +177,12 @@ export default function CustomerView() {
 
   const getStatusColor = () => {
     if (!customer) return 'bg-gray-100';
-    
+
     switch (customer.status) {
       case 'notified':
         return 'bg-green-100 border-green-500';
       case 'waiting':
-        return 'bg-blue-50 border-blue-300';
+        return 'bg-primary/60 border-primary-sat';
       case 'served':
         return 'bg-gray-100 border-gray-300';
       case 'skipped':
@@ -214,40 +214,45 @@ export default function CustomerView() {
     );
   }
 
+  const etaWaitTime = Math.floor(((queue.estimatedWaitPerPerson || 0) * (position.totalAhead || 1)) / 1000 / 60)
+  
+
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-2">{queue.queueName}</h1>
-      <p className="text-gray-600 mb-6">
+    <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
+      <h1 className="text-xl font-bold mb-2 text-center">{queue.queueName}</h1>
+      <p className="mb-6 text-center font-medium">
         Host: {queue.hostName}
       </p>
 
-      <div className={`p-4 border rounded-md mb-6 ${getStatusColor()}`}>
-        <h2 className="font-bold text-lg mb-2">
-          {customer.name}
-        </h2>
-        <div className="text-lg font-medium mb-2">
-          {getStatusDisplay()}
+      <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
+        <div className={`flex justify-between flex-wrap`}>
+          <h2 className="font-bold base mb-2">
+            {customer.name}
+          </h2>
+          <div className="base font-bold mb-2">
+            {getStatusDisplay()}
+          </div>
         </div>
-        
+
         {customer.status === 'waiting' && (
           <>
-            <div className="flex justify-between items-center mb-1">
-              <span>Your position:</span>
-              <span className="font-bold text-lg">{position.position}</span>
+            <div className="mt-5 flex justify-between items-center mb-2">
+              <span className='text-sm'>Your number:</span>
+              <span className="font-bold">{position.position.toString().padStart(3, "0")}</span>
             </div>
-            <div className="flex justify-between items-center mb-1">
-              <span>People ahead of you:</span>
-              <span className="font-bold text-lg">{position.totalAhead}</span>
+            <div className="flex justify-between items-center mb-2">
+              <span className='text-sm'>People ahead of you:</span>
+              <span className="font-bold">{position.totalAhead}</span>
             </div>
-            {position.estimatedWaitTime !== null && (
+            {queue.estimatedWaitPerPerson && (
               <div className="flex justify-between items-center">
-                <span>Estimated wait time:</span>
-                <span className="font-bold text-lg">~{position.estimatedWaitTime} minutes</span>
+                <span className='text-sm'>Estimated wait time:</span>
+                <span className="font-bold text-end">{etaWaitTime} minutes</span>
               </div>
             )}
           </>
         )}
-        
+
         {customer.status === 'notified' && (
           <div className="text-green-700 font-medium mt-2">
             You were called at {customer.notifiedAt?.toDate().toLocaleTimeString()}
@@ -255,23 +260,23 @@ export default function CustomerView() {
         )}
       </div>
 
-      <div className="mb-6 text-sm text-gray-600">
+      <div className="mb-4 text-xs text-center text-gray-900">
         <p>You joined this queue on {customer.joinedAt.toDate().toLocaleString()}</p>
       </div>
 
       {!queue.isActive && (
-        <div className="bg-yellow-100 p-3 rounded-md mb-4 text-yellow-800 text-sm">
+        <div className="bg-yellow-100 p-3 rounded-md mb-4 text-yellow-800 text-xs">
           Note: This queue is currently not accepting new customers.
         </div>
       )}
 
       <div className="mt-8 border-t pt-4">
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-xs text-gray-900 mb-3">
           Keep this page open to maintain your position and receive notifications when it's your turn.
         </p>
         <button
           onClick={() => navigate("/")}
-          className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200"
+          className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
         >
           Return to Home
         </button>
