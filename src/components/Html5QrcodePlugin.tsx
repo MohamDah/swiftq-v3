@@ -133,6 +133,7 @@ const Html5QrcodePlugin = (props: any) => {
             
             stopScanner();
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty dependency array to run only once
 
     const handleCameraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

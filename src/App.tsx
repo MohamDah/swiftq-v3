@@ -7,6 +7,7 @@ import ErrorPage from "./components/ErrorPage";
 
 import { JoinQueueLoader } from "./pages/join/[queueId]/loader";
 import { HostQueueLoader } from "./pages/my-queues/loader";
+import Layout from "./pages/Layout";
 
 
 // Lazy loading components for better performance
@@ -27,6 +28,7 @@ const Signup = lazy(() => import("./pages/register/Signup"));
 const router = createBrowserRouter([
   {
     errorElement: <ErrorPage />,
+    element: <Layout />,
     children: [
       {
         path: "/",

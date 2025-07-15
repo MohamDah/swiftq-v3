@@ -7,7 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#D5F279"
+        "primary": "#D5F279",
+        "primary-sat": "#C3FF0380"
       },
       keyframes: {
         'slide-up': {
