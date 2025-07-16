@@ -92,13 +92,17 @@ export const getQueueCustomers = async (queueId: string): Promise<{ id: string, 
 
 export const getQueue = async (queueId: string): Promise<{ id: string, data: Queue; } | null> => {
   try {
-    const docRef = doc(db, "queues", queueId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
+    const queuesQuery = query(
+      collection(db, "queues"),
+      where("id", "==", queueId.toUpperCase())
+    );
+    const querySnapshot = await getDocs(queuesQuery);
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
       return {
-        id: docSnap.id,
-        data: docSnap.data() as Queue
+        id: doc.id,
+        data: doc.data() as Queue
       };
     } else {
       return null;

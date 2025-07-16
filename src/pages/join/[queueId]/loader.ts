@@ -9,14 +9,13 @@ export async function JoinQueueLoader({ params }: LoaderFunctionArgs) {
 
   try {
     // Get queue data and customers in parallel
-    const [queueResponse, customers] = await Promise.all([
+    const [queueResponse] = await Promise.all([
       getQueue(queueId),
-      getQueueCustomers(queueId)
     ]);
-
     if (!queueResponse) {
       throw new Response("Queue not found", { status: 404 });
     }
+    const customers = await getQueueCustomers(queueResponse?.id || "")
 
     // Get previous positions from localStorage
     const allPrevPoses = JSON.parse(localStorage.getItem("queue_history") || "null") as

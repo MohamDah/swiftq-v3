@@ -1,6 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
 export interface Queue {
+  id: string;
   hostId: string;
   hostName: string;
   queueName: string;

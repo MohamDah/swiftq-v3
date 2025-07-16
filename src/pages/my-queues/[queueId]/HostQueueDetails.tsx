@@ -143,7 +143,7 @@ export default function HostQueueDetails() {
 
   // Generate shareable join link
   const getJoinLink = () => {
-    return `${window.location.origin}/join/${queueId}`;
+    return `${window.location.origin}/join/${queue?.data.id}`;
   };
 
   // Copy join link to clipboard
@@ -228,7 +228,7 @@ export default function HostQueueDetails() {
                   Copy Join Link
                 </button>
                 <Link
-                  to={`/qr/${queueId}`}
+                  to={`/qr/${queue.data.id}`}
                   className="px-3 py-2 bg-primary-sat rounded-md hover:bg-primary"
                 >
                   View QR Code
