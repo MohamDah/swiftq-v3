@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   getQueue,
@@ -28,6 +28,35 @@ export default function CustomerView() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Add ref for previous customer status
+  const prevCustomerStatusRef = useRef<string | null>(null);
+  // Add ref for notification sound
+  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize notification sound
+  useEffect(() => {
+    notificationSoundRef.current = new Audio('/notification-sound.mp3');
+    return () => {
+      // Cleanup if needed
+      if (notificationSoundRef.current) {
+        notificationSoundRef.current.pause();
+        notificationSoundRef.current = null;
+      }
+    };
+  }, []);
+
+  // Function to play notification sound
+  const playNotificationSound = () => {
+    if (notificationSoundRef.current) {
+      // Reset the audio to the beginning if it's already playing
+      notificationSoundRef.current.currentTime = 0;
+      // Play the sound
+      notificationSoundRef.current.play().catch(err => {
+        console.error("Error playing notification sound:", err);
+      });
+    }
+  };
 
   // Initial data fetch
   useEffect(() => {
@@ -82,6 +111,14 @@ export default function CustomerView() {
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as Customer;
+          
+          // Check if status changed to 'notified'
+          if (prevCustomerStatusRef.current !== 'notified' && data.status === 'notified') {
+            playNotificationSound();
+          }
+          
+          // Update previous status ref
+          prevCustomerStatusRef.current = data.status;
           setCustomer(data);
         } else {
           setError('Customer position no longer exists');
@@ -215,7 +252,7 @@ export default function CustomerView() {
 
   const etaWaitTime = Math.floor(((queue.estimatedWaitPerPerson || 0) * (position.totalAhead + 1)) / 1000 / 60);
 
-
+  // TODO: Then make the analytics page
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
       <h1 className="text-xl font-bold mb-2 text-center">{queue.queueName}</h1>
