@@ -190,7 +190,7 @@ export default function Analytics() {
     <div className="py-12 bg-primary">
       <h1 className="text-2xl font-semibold mb-6 text-center bg-white py-5">Analytics</h1>
 
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-6 container mx-auto">
         <div className="bg-white rounded-lg shadow-md p-4 flex flex-wrap justify-center gap-2">
           {(['today', 'yesterday', 'week', 'month', 'all'] as TimeFilter[]).map((filter) => (
             <button
@@ -213,7 +213,7 @@ export default function Analytics() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 container mx-auto">
             <div className="bg-white rounded-lg shadow-md p-6 relative">
               <div className='absolute top-4 right-4'>
                 <BarChart className='size-10' />
@@ -264,7 +264,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          <div className="mt-8 px-6">
+          <div className="mt-8 px-6 container mx-auto">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-3">Summary for {getFilterDisplayName(timeFilter)}</h2>
               <p className="text-gray-700">
