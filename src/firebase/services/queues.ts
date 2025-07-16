@@ -249,3 +249,58 @@ export const deleteQueue = async (queueId: string) => {
   const queueRef = doc(db, "queues", queueId)
   await deleteDoc(queueRef)
 }
+
+// Analytics functions - require authentication
+export const getQueueAnalytics = async (queueId: string): Promise<{ id: string, data: Customer; }[]> => {
+  try {
+    const customersRef = collection(db, "queues", queueId, "customers");
+    const customersQuery = query(
+      customersRef,
+      where("status", "==", "served")
+    );
+
+    const customersSnapshot = await getDocs(customersQuery);
+    return customersSnapshot.docs.map(i => ({
+      id: i.id,
+      data: i.data() as Customer
+    }));
+  } catch (error) {
+    console.error("Error fetching queue analytics:", error);
+    throw error;
+  }
+};
+
+export const getAllCustomersForHost = async (): Promise<{ queueId: string, queueName: string, customers: { id: string, data: Customer; }[] }[]> => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get all queues first
+    const queues = await getHostQueues();
+    const result = [];
+
+    // For each queue, get all its customers
+    for (const queue of queues) {
+      const customersRef = collection(db, "queues", queue.id, "customers");
+      const customersSnapshot = await getDocs(customersRef);
+      
+      result.push({
+        queueId: queue.id,
+        queueName: queue.data.queueName,
+        customers: customersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data() as Customer
+        }))
+      });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching all customer data:", error);
+    throw error;
+  }
+};

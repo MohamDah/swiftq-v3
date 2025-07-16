@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import logoFull from "../assets/logoFull.png";
@@ -8,10 +8,7 @@ import { useState } from 'react';
 
 export default function Layout() {
   const { currentUser } = useAuth();
-  const location = useLocation();
-  const isHome = location.pathname === "/";
   const [showModal, setShowModal] = useState(false);
-
 
   const handleSignOut = () => {
     logout();
@@ -24,38 +21,20 @@ export default function Layout() {
         <Link to="/" className="flex items-center">
           <img src={logoFull} className='max-h-12' />
         </Link>
-        {isHome ? (
-          currentUser ?
-            <div className="flex gap-2 ">
-              <Link to="/my-queues">
-                <button className="text-sm bg-primary px-4 py-1 rounded-full font-medium shadow-lg shadow-black/30">My Queues</button>
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="text-sm bg-white border border-red-500 text-red-500 px-4 py-1 rounded-full font-medium hover:bg-red-50 shadow-lg shadow-black/30"
-              >
-                Logout
-              </button>
-            </div>
-            :
-            <Link to="/login">
-              <button className="bg-primary px-6 py-1 rounded-full font-bold shadow-lg shadow-black/30">Login</button>
-            </Link>
-        ) : (
-          <button onClick={() => setShowModal(!showModal)} className='bg-primary border border-white p-2 rounded-full shadow-lg shadow-black/25'>
-            <MenuIcon />
-          </button>
-        )}
+
+        <button onClick={() => setShowModal(!showModal)} className='bg-primary border border-white p-2 rounded-full shadow-lg shadow-black/25'>
+          <MenuIcon />
+        </button>
       </header>
 
       {/* Menu Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col items-center"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setShowModal(false);
-          }
-        }}>
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowModal(false);
+            }
+          }}>
           <div className='container flex justify-end py-3 px-4'>
             <button onClick={(e) => {
               e.stopPropagation();

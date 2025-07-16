@@ -1,4 +1,3 @@
-import React from 'react';
 import rays from "../assets/rays.png";
 import logoBanner from "../assets/logoBanner.png";
 import { Outlet } from 'react-router-dom';

@@ -68,13 +68,13 @@ export default function HostQueues() {
               {queues.map((queue) => (
                 <li key={queue.id}>
                   <div className="px-4 py-4 sm:px-6 bg-primary/50 rounded-3xl shadow-md shadow-black/25">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-y-2">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-white rounded-full flex items-center justify-center">
                           <span className="font-semibold">{queue.count}</span>
                         </div>
                         <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900">{queue.data.queueName}</h3>
+                          <h3 className="text-lg font-medium text-gray-900 break-words">{queue.data.queueName}</h3>
                           <p className="text-sm text-gray-500">
                             Created {queue.data.createdAt.toDate().toLocaleDateString()} •
                             {queue.data.requireCustomerName ? " Names required" : " Names not required"}
