@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import logoFull from "../assets/logoFull.png";
 import { MenuIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
+import JoinPopup from './_components/JoinPopup';
 
 
 export default function Layout() {
   const { currentUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
 
   const handleSignOut = () => {
     logout();
@@ -16,6 +18,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {showJoin && <JoinPopup onClose={() => setShowJoin(false)} />}
       {/* Header */}
       <header className="sticky top-0 z-20 container mx-auto px-4 py-2 flex justify-between items-center">
         <Link to="/" className="flex items-center">
@@ -60,17 +63,14 @@ export default function Layout() {
                   Analytics
                 </button>
               </Link>
-              {/* <Link to="/analytics" className="w-full" onClick={() => setShowModal(false)}>
-                <button className="w-full bg-white py-3 px-4 rounded-xl shadow-md font-semibold text-center">
-                  Analytics
-                </button>
-              </Link> */}
               <div className='flex flex-col gap-5 mt-12'>
-                <Link to="/" onClick={() => setShowModal(false)}>
-                  <button className="bg-primary-sat px-6 py-1 rounded-full font-medium shadow-lg shadow-black/30">
-                    Join Queue
-                  </button>
-                </Link>
+                <button className="bg-primary-sat px-6 py-1 rounded-full font-medium shadow-lg shadow-black/30"
+                  onClick={() => {
+                    setShowModal(false);
+                    setShowJoin(true);
+                  }}>
+                  Join Queue
+                </button>
                 {currentUser ?
                   <button
                     onClick={() => {

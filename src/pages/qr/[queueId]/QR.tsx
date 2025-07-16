@@ -173,7 +173,6 @@ export default function QR() {
               <li>Display this QR code for customers to scan</li>
               <li>When scanned, customers will be directed to the join page</li>
               <li>Customers can enter their information and join the queue</li>
-              <li>Alternatively, customers can use the queue code: <span className="font-bold">{queueId?.substring(0, 6).toUpperCase()}</span></li>
             </ul>
           </div>
         </div>
