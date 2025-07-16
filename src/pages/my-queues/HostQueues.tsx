@@ -89,7 +89,7 @@ export default function HostQueues() {
                           Manage
                         </Link>
                         <Link
-                          to={`/join/${queue.id}`}
+                          to={`/join/${queue.data.id}`}
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-green-500 bg-green-300 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                           Join Link

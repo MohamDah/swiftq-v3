@@ -14,13 +14,13 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../../../../../firebase/config';
-import type { Queue, Customer } from '../../../../../firebase/schema';
+import type { Customer, Queue, QueueItem } from '../../../../../firebase/schema';
 
 export default function CustomerView() {
   const { queueId, customerId } = useParams<{ queueId: string; customerId: string; }>();
   const navigate = useNavigate();
 
-  const [queue, setQueue] = useState<Queue | null>(null);
+  const [queue, setQueue] = useState<QueueItem | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [position, setPosition] = useState<{ position: number; totalAhead: number; estimatedWaitTime: number | null; }>({
     position: 0,
@@ -34,7 +34,7 @@ export default function CustomerView() {
   const prevCustomerStatusRef = useRef<string | null>(null);
   // Add ref for notification sound
   const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
-
+  // TODO: Be able to quit queue
   // Initialize notification sound
   useEffect(() => {
     notificationSoundRef.current = new Audio('/notification-sound.mp3');
@@ -76,10 +76,10 @@ export default function CustomerView() {
           setLoading(false);
           return;
         }
-        setQueue(queueData.data);
+        setQueue(queueData);
 
         // Get customer data
-        const customerData = await getCustomerStatus(queueId, customerId);
+        const customerData = await getCustomerStatus(queueData.id, customerId);
         if (!customerData) {
           setError('Customer position not found');
           setLoading(false);
@@ -88,7 +88,7 @@ export default function CustomerView() {
         setCustomer(customerData);
 
         // Get position data
-        const positionData = await getCustomerPosition(queueId, customerId);
+        const positionData = await getCustomerPosition(queueData.id, customerId);
         setPosition(positionData);
 
         setLoading(false);
@@ -104,11 +104,11 @@ export default function CustomerView() {
 
   // Set up real-time listeners
   useEffect(() => {
-    if (!queueId || !customerId || loading) return;
+    if (!queue?.id || !customerId || loading) return;
 
     // Listen for changes to the customer document
     const customerUnsubscribe = onSnapshot(
-      doc(db, 'queues', queueId, 'customers', customerId),
+      doc(db, 'queues', queue.id, 'customers', customerId),
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as Customer;
@@ -134,7 +134,7 @@ export default function CustomerView() {
     // Listen for changes to customers ahead in the queue to update position
     const customersAheadUnsubscribe = onSnapshot(
       query(
-        collection(db, 'queues', queueId, 'customers'),
+        collection(db, 'queues', queue.id, 'customers'),
         where('status', 'in', ['waiting', 'notified']),
       ),
       async (snapshot) => {
@@ -150,7 +150,7 @@ export default function CustomerView() {
             setPosition(prev => ({
               ...prev,
               totalAhead: ahead,
-              estimatedWaitTime: queue?.estimatedWaitPerPerson ? ahead * queue.estimatedWaitPerPerson : null
+              estimatedWaitTime: queue?.data.estimatedWaitPerPerson ? ahead * queue.data.estimatedWaitPerPerson : null
             }));
           }
         } catch (err) {
@@ -164,11 +164,11 @@ export default function CustomerView() {
 
     // Listen for changes to the queue document
     const queueUnsubscribe = onSnapshot(
-      doc(db, 'queues', queueId),
+      doc(db, 'queues', queue.id),
       (snapshot) => {
         if (snapshot.exists()) {
           const queueData = snapshot.data() as Queue;
-          setQueue(queueData);
+          setQueue({id: queue.id, data: queueData});
 
           // Update estimated wait time if applicable
           if (queueData.estimatedWaitPerPerson) {
@@ -192,7 +192,7 @@ export default function CustomerView() {
       customersAheadUnsubscribe();
       queueUnsubscribe();
     };
-  }, [queueId, customerId, loading]);
+  }, [queue?.id, customerId, loading]);
 
   // Helper function to format status for display
   const getStatusDisplay = () => {
@@ -251,14 +251,14 @@ export default function CustomerView() {
     );
   }
 
-  const etaWaitTime = Math.floor(((queue.estimatedWaitPerPerson || 0) * (position.totalAhead + 1)) / 1000 / 60);
+  const etaWaitTime = Math.floor(((queue.data.estimatedWaitPerPerson || 0) * (position.totalAhead + 1)) / 1000 / 60);
 
   // TODO: Then make the analytics page
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
-      <h1 className="text-xl font-bold mb-2 text-center">{queue.queueName}</h1>
+      <h1 className="text-xl font-bold mb-2 text-center">{queue.data.queueName}</h1>
       <p className="mb-6 text-center font-medium">
-        Host: {queue.hostName}
+        Host: {queue.data.hostName}
       </p>
 
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
@@ -281,7 +281,7 @@ export default function CustomerView() {
               <span className='text-sm'>People ahead of you:</span>
               <span className="font-bold">{position.totalAhead}</span>
             </div>
-            {queue.estimatedWaitPerPerson && (
+            {queue.data.estimatedWaitPerPerson && (
               <div className="flex justify-between items-center">
                 <span className='text-sm'>Estimated wait time:</span>
                 <span className="font-bold text-end">{etaWaitTime} minutes</span>
@@ -303,7 +303,7 @@ export default function CustomerView() {
         <p>You joined this queue on {customer.joinedAt.toDate().toLocaleString()}</p>
       </div>
 
-      {!queue.isActive && (
+      {!queue.data.isActive && (
         <div className="bg-yellow-100 p-3 rounded-md mb-4 text-yellow-800 text-xs">
           Note: This queue is currently not accepting new customers.
         </div>

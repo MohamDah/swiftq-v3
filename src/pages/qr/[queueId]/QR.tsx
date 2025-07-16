@@ -51,6 +51,8 @@ export default function QR() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  // TODO: Remove hamburger if user not logged in
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

@@ -35,7 +35,7 @@ export default function JoinQueue() {
     setError(null);
 
     try {
-      const customerId = await joinQueue(queueId, customerName.trim() || undefined);
+      const customerId = await joinQueue(queue.id, customerName.trim() || undefined);
 
       // Navigate to customer view
       navigate(`/queue/${queueId}/customer/${customerId}`);
