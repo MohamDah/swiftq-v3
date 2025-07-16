@@ -76,6 +76,11 @@ export default function Layout() {
                   Create New Queue
                 </button>
               </Link>
+              <Link to="/analytics" className="w-full" onClick={() => setShowModal(false)}>
+                <button className="w-full bg-white py-3 px-4 rounded-xl shadow-lg shadow-black/25 font-semibold text-center">
+                  Analytics
+                </button>
+              </Link>
               {/* <Link to="/analytics" className="w-full" onClick={() => setShowModal(false)}>
                 <button className="w-full bg-white py-3 px-4 rounded-xl shadow-md font-semibold text-center">
                   Analytics

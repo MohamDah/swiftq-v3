@@ -18,6 +18,7 @@ const CreateQueue = lazy(() => import("./pages/create/CreateQueue"));
 const HostQueues = lazy(() => import("./pages/my-queues/HostQueues"));
 const HostQueueDetails = lazy(() => import("./pages/my-queues/[queueId]/HostQueueDetails"));
 const QR = lazy(() => import("./pages/qr/[queueId]/QR"));
+const Analytics = lazy(() => import("./pages/analytics/Analytics"));
 // Customer
 const JoinQueue = lazy(() => import("./pages/join/[queueId]/JoinQueue"));
 const CustomerView = lazy(() => import("./pages/queue/[queueId]/customer/[customerId]/CustomerView"));
@@ -106,6 +107,16 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <Suspense fallback={<SuspLoader />}>
               <QR />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/analytics",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<SuspLoader />}>
+              <Analytics />
             </Suspense>
           </ProtectedRoute>
         ),

@@ -13,6 +13,7 @@ import {
 import { db } from "../config";
 import { getAuth } from "firebase/auth";
 import type { Queue, Customer } from "../schema";
+import { generateId } from "../../utils";
 
 // Host functions - require authentication
 export const createQueue = async (
@@ -29,6 +30,7 @@ export const createQueue = async (
     }
 
     const docRef = await addDoc(collection(db, "queues"), {
+      id: generateId(),
       hostId: user.uid,
       hostName: user.displayName || "Host",
       queueName,

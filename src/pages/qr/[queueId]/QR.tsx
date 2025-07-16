@@ -98,12 +98,22 @@ export default function QR() {
             </button>
           </div>
 
-          {/* Queue Info */}
+          {/* Queue Info with Code */}
           <div className="p-5 bg-blue-50 border-b border-blue-100">
-            <h2 className="text-lg font-semibold text-blue-900">{queue.data.queueName}</h2>
-            <p className="text-sm text-blue-700">Host: {queue.data.hostName}</p>
-            <div className="mt-2 text-xs inline-block px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-              Status: {queue.data.isActive ? 'Active' : 'Inactive'}
+            <div className="flex flex-col justify-between items-start">
+              <div>
+                <h2 className="text-lg font-semibold text-blue-900">{queue.data.queueName}</h2>
+                <p className="text-sm text-blue-700">Host: {queue.data.hostName}</p>
+                <div className="mt-2 text-xs inline-block px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                  Status: {queue.data.isActive ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+              <div className="text-center self-center mt-4">
+                <div className="text-xs text-blue-700 mb-1">Queue Code</div>
+                <div className="text-xl font-bold bg-white px-3 py-2 rounded-lg shadow-sm border border-blue-200">
+                  {queueId}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -156,13 +166,14 @@ export default function QR() {
             </div>
           </div>
 
-          {/* Instructions */}
+          {/* Instructions with Queue Code */}
           <div className="p-5 border-t border-gray-200 bg-gray-50">
             <h3 className="text-sm font-medium text-gray-900">Instructions:</h3>
             <ul className="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
               <li>Display this QR code for customers to scan</li>
               <li>When scanned, customers will be directed to the join page</li>
               <li>Customers can enter their information and join the queue</li>
+              <li>Alternatively, customers can use the queue code: <span className="font-bold">{queueId?.substring(0, 6).toUpperCase()}</span></li>
             </ul>
           </div>
         </div>
