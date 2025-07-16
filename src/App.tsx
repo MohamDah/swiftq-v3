@@ -1,30 +1,22 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SuspLoader from "./components/SuspLoader";
 import ErrorPage from "./components/ErrorPage";
 
 import { JoinQueueLoader } from "./pages/join/[queueId]/loader";
 import { HostQueueLoader } from "./pages/my-queues/loader";
 import Layout from "./pages/Layout";
 import CustomerLayout from "./components/CustomerLayout";
-
-
-// Lazy loading components for better performance
-const Home = lazy(() => import("./pages/Home"));
-// Host
-const CreateQueue = lazy(() => import("./pages/create/CreateQueue"));
-const HostQueues = lazy(() => import("./pages/my-queues/HostQueues"));
-const HostQueueDetails = lazy(() => import("./pages/my-queues/[queueId]/HostQueueDetails"));
-const QR = lazy(() => import("./pages/qr/[queueId]/QR"));
-const Analytics = lazy(() => import("./pages/analytics/Analytics"));
-// Customer
-const JoinQueue = lazy(() => import("./pages/join/[queueId]/JoinQueue"));
-const CustomerView = lazy(() => import("./pages/queue/[queueId]/customer/[customerId]/CustomerView"));
-// Auth
-const Login = lazy(() => import("./pages/login/Login"));
-const Signup = lazy(() => import("./pages/register/Signup"));
+import CreateQueue from "./pages/create/CreateQueue";
+import HostQueues from "./pages/my-queues/HostQueues";
+import HostQueueDetails from "./pages/my-queues/[queueId]/HostQueueDetails";
+import QR from "./pages/qr/[queueId]/QR";
+import Analytics from "./pages/analytics/Analytics";
+import Home from "./pages/Home";
+import JoinQueue from "./pages/join/[queueId]/JoinQueue";
+import CustomerView from "./pages/queue/[queueId]/customer/[customerId]/CustomerView";
+import Login from "./pages/login/Login";
+import Signup from "./pages/register/Signup";
 
 
 const router = createBrowserRouter([
@@ -36,18 +28,14 @@ const router = createBrowserRouter([
       {
         path: "/join/:queueId",
         element: (
-          <Suspense fallback={<SuspLoader />}>
-            <JoinQueue />
-          </Suspense>
+          <JoinQueue />
         ),
         loader: JoinQueueLoader
       },
       {
         path: "/queue/:queueId/customer/:customerId",
         element: (
-          <Suspense fallback={<SuspLoader />}>
-            <CustomerView />
-          </Suspense>
+          <CustomerView />
         ),
       },
     ]
@@ -58,22 +46,17 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Suspense fallback={<SuspLoader />}>
-          <Home />
-        </Suspense>
+        element: <Home />
       },
       // Host Views
       {
-
         element: <CustomerLayout />,
         children: [
           {
             path: "/create",
             element: (
               <ProtectedRoute>
-                <Suspense fallback={<SuspLoader />}>
-                  <CreateQueue />
-                </Suspense>
+                <CreateQueue />
               </ProtectedRoute>
             )
           }
@@ -84,9 +67,7 @@ const router = createBrowserRouter([
         path: "/my-queues",
         element: (
           <ProtectedRoute>
-            <Suspense fallback={<SuspLoader />}>
-              <HostQueues />
-            </Suspense>
+            <HostQueues />
           </ProtectedRoute>
         ),
         loader: HostQueueLoader
@@ -95,9 +76,7 @@ const router = createBrowserRouter([
         path: "/my-queues/:queueId",
         element: (
           <ProtectedRoute>
-            <Suspense fallback={<SuspLoader />}>
-              <HostQueueDetails />
-            </Suspense>
+            <HostQueueDetails />
           </ProtectedRoute>
         ),
       },
@@ -105,9 +84,7 @@ const router = createBrowserRouter([
         path: "/qr/:queueId",
         element: (
           <ProtectedRoute>
-            <Suspense fallback={<SuspLoader />}>
-              <QR />
-            </Suspense>
+            <QR />
           </ProtectedRoute>
         ),
       },
@@ -115,9 +92,7 @@ const router = createBrowserRouter([
         path: "/analytics",
         element: (
           <ProtectedRoute>
-            <Suspense fallback={<SuspLoader />}>
-              <Analytics />
-            </Suspense>
+            <Analytics />
           </ProtectedRoute>
         ),
       },
@@ -126,15 +101,12 @@ const router = createBrowserRouter([
       // Auth Views
       {
         path: "/login",
-        element: <Suspense fallback={<SuspLoader />}>
-          <Login />
-        </Suspense>
+        element: <Login />
       },
       {
         path: "/register",
-        element: <Suspense fallback={<SuspLoader />}>
+        element: 
           <Signup />
-        </Suspense>
       },
     ]
   }
