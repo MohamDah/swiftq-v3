@@ -39,7 +39,7 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <h3 className="text-2xl font-bold text-center mb-12">How It Works</h3>
 
-            <div className="max-w-3xl mx-auto space-y-8">
+            <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-y-8 gap-x-12">
               {/* Step 1 */}
               <div className="bg-white rounded-[29px] p-6 flex items-center">
                 <div className="bg-gray-200 rounded-full min-w-14 aspect-square flex items-center justify-center mr-6">

@@ -1,69 +1,89 @@
-# React + TypeScript + Vite
+# SwiftQ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SwiftQ is a modern web application designed to streamline queue management through QR code technology. It allows users to create, scan, and manage queues efficiently.
 
-Currently, two official plugins are available:
+## Table of Contents
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [Overview](#overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Application](#running-the-application)
+- [Project Structure](#project-structure)
+- [License](#license)
 
-## Expanding the ESLint configuration
+## Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+SwiftQ leverages QR code technology to create a seamless queuing experience. Users can generate QR codes for queues, scan them to join, and manage their position in line—all from their mobile devices.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- QR code generation and scanning
+- Real-time queue management
+- User authentication via Firebase
+- Responsive design for mobile and desktop
+- Date formatting utilities
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Technologies Used
+
+- **Frontend**: React 19 with TypeScript
+- **Routing**: React Router DOM 7
+- **Styling**: TailwindCSS
+- **QR Code**: QRCode.react (generation) and HTML5-QRCode (scanning)
+- **Authentication/Backend**: Firebase 11
+- **Date Handling**: date-fns
+- **Icons**: Lucide React
+- **Build Tools**: Vite 7, TypeScript, SWC
+- **Linting**: ESLint 9
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (latest LTS version recommended)
+- npm or yarn package manager
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd foundations-project
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Application
+
+- **Development Mode**:
+  ```bash
+  npm run dev
+  ```
+
+- **Build for Production**:
+  ```bash
+  npm run build
+  ```
+
+## Project Structure
+
+```
+foundations-project/
+├── index.html           # Entry HTML file
+├── src/
+│   ├── main.tsx         # React entry point
+│   ├── App.tsx          # Main application component
+│   └── globals.css      # Global styles
+├── public/              # Static assets
+│   └── swiftqIcon.png   # Application favicon
+└── package.json         # Project dependencies and scripts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## License
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+[Add your license information here]

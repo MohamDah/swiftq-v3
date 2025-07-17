@@ -190,7 +190,7 @@ export default function HostQueueDetails() {
   return (
     <div className="bg-primary">
       <h1 className="text-2xl text-center font-bold flex-1 bg-white py-5 mt-6">{queue.data.queueName}</h1>
-      <div className="container px-4 mx-auto my-10">
+      <div className="container px-4 mx-auto my-10 lg:grid grid-cols-2 grid-rows-2 grid-flow-col lg:items-start lg:gap-x-10">
         {/* Queue status and actions */}
         <div className="bg-white rounded-2xl overflow-hidden mb-6 shadow-md shadow-black/25">
           <div className="m-4 p-4 bg-primary/60 rounded-2xl">
@@ -263,7 +263,7 @@ export default function HostQueueDetails() {
         </div>
 
         {/* Customers list */}
-        <div className="bg-white rounded-xl overflow-hidden shadow-md shadow-black/25">
+        <div className="lg:row-span-2 bg-white rounded-xl overflow-hidden shadow-md shadow-black/25">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h2 className="text-lg font-bold text-gray-900">Customers in Queue</h2>
             <p className="mt-1 text-xs text-gray-500">

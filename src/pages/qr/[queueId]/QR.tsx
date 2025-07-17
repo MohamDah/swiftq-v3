@@ -123,7 +123,7 @@ export default function QR() {
                   <h2 className="text-lg font-semibold">{queue.data.queueName}</h2>
                   <p className="text-sm">Host: {queue.data.hostName}</p>
                 </div>
-                <div className="mt-2 text-sm inline-block px-4 py-1 rounded-lg bg-green-200 border border-green-800">
+                <div className={`mt-2 text-sm inline-block px-4 py-1 rounded-lg border ${queue.data.isActive ? "bg-green-200 border-green-800" : "bg-red-200 border-red-800" }`}>
                   {queue.data.isActive ? 'Active' : 'Inactive'}
                 </div>
               </div>
