@@ -22,26 +22,6 @@ import Signup from "./pages/register/Signup";
 const router = createBrowserRouter([
   {
     errorElement: <ErrorPage />,
-    element: <CustomerLayout />,
-    children: [
-      // Customer Views
-      {
-        path: "/join/:queueId",
-        element: (
-          <JoinQueue />
-        ),
-        loader: JoinQueueLoader
-      },
-      {
-        path: "/queue/:queueId/customer/:customerId",
-        element: (
-          <CustomerView />
-        ),
-      },
-    ]
-  },
-  {
-    errorElement: <ErrorPage />,
     element: <Layout />,
     children: [
       {
@@ -52,6 +32,19 @@ const router = createBrowserRouter([
       {
         element: <CustomerLayout />,
         children: [
+          {
+            path: "/queue/:queueId/customer/:customerId",
+            element: (
+              <CustomerView />
+            ),
+          },
+          {
+            path: "/join/:queueId",
+            element: (
+              <JoinQueue />
+            ),
+            loader: JoinQueueLoader
+          },
           {
             path: "/create",
             element: (
@@ -105,7 +98,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/register",
-        element: 
+        element:
           <Signup />
       },
     ]

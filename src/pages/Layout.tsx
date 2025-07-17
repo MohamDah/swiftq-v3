@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import logoFull from "../assets/logoFull.png";
@@ -11,6 +11,8 @@ export default function Layout() {
   const { currentUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const pathname = useLocation().pathname;
+  const showBurger = !["/register", "/login", "/join", "/customer/"].some(route => pathname.includes(route));
 
   const handleSignOut = () => {
     logout();
@@ -25,9 +27,16 @@ export default function Layout() {
           <img src={logoFull} className='max-h-12' />
         </Link>
 
-        <button onClick={() => setShowModal(!showModal)} className='bg-primary border border-white p-2 rounded-full shadow-lg shadow-black/25'>
-          <MenuIcon />
-        </button>
+        {!showBurger
+          ? null
+          : currentUser
+            ? <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25'>
+              <MenuIcon />
+            </button>
+            : <Link to="/login">
+              <button className="bg-primary-sat px-6 py-1 w-full rounded-full font-semibold shadow-lg shadow-black/30">Login</button>
+            </Link>
+        }
       </header>
 
       {/* Menu Modal */}
