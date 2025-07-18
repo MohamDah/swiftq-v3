@@ -17,7 +17,7 @@ const Login = () => {
     
     try {
       await loginWithEmail(email, password);
-      navigate('/');
+      navigate('/my-queues');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Failed to log in');

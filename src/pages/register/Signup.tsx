@@ -78,7 +78,7 @@ export default function Signup() {
       });
 
       // Navigate to home page after successful signup
-      navigate('/');
+      navigate('/my-queues');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Signup error:', err);

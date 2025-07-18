@@ -19,8 +19,6 @@ export default function Layout() {
   };
 
 
-  // TODO: In the customer layout, make it scrollable instead of centered.
-  // TODO: When logging in successfully, redirect to my queues page instead of home page
   // TODO: Make header thingy not sticky
   return (
     <div className="min-h-screen flex flex-col">
