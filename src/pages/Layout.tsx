@@ -19,12 +19,11 @@ export default function Layout() {
   };
 
 
-  // TODO: Make header thingy not sticky
   return (
     <div className="min-h-screen flex flex-col">
       {showJoin && <JoinPopup onClose={() => setShowJoin(false)} />}
       {/* Header */}
-      <header className="sticky top-0 z-20 container mx-auto px-4 py-2 flex justify-between items-center">
+      <header className="z-20 container mx-auto px-4 py-2 flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img src={logoFull} className='max-h-12' />
         </Link>
