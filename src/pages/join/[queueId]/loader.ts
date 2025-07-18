@@ -20,7 +20,7 @@ export async function JoinQueueLoader({ params }: LoaderFunctionArgs) {
     // Get previous positions from localStorage
     const allPrevPoses = JSON.parse(localStorage.getItem("queue_history") || "null") as
       Record<"customerId" | "joinedAt" | "queueId" | "queueName", string>[] || [];
-    const filteredPrevPoses = allPrevPoses.filter(i => i.queueId === queueId);
+    const filteredPrevPoses = allPrevPoses.filter(i => i.queueId === queueResponse.id);
 
     // Filter customers to find previous positions
     const prevPositions = customers.filter(i =>
