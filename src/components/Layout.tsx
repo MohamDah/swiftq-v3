@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import logoFull from "../assets/logoFull.png";
 import { MenuIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import JoinPopup from './_components/JoinPopup';
+import JoinPopup from '../pages/_components/JoinPopup';
 
 
 export default function Layout() {

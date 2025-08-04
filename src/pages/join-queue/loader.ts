@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "react-router-dom";
-import { getQueue, getQueueCustomers } from "../../../firebase/services/queues";
+import { getQueue, getQueueCustomers } from "../../firebase/services/queues";
 
 export async function JoinQueueLoader({ params }: LoaderFunctionArgs) {
   const { queueId } = params;

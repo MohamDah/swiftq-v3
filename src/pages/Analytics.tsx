@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllCustomersForHost } from '../../firebase/services/queues';
+import { getAllCustomersForHost } from '../firebase/services/queues';
 import { Timestamp } from 'firebase/firestore';
 import { BarChart, BarChart2, PieChart } from 'lucide-react';
 
@@ -16,6 +16,7 @@ interface Analytics {
 
 type TimeFilter = 'today' | 'yesterday' | 'week' | 'month' | 'all';
 
+// /analytics
 export default function Analytics() {
   const [loading, setLoading] = useState<boolean>(true);
   const [analytics, setAnalytics] = useState<Analytics>({
@@ -25,7 +26,7 @@ export default function Analytics() {
     totalCustomers: 0,
     totalQueues: 0
   });
-  const [_error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
   useEffect(() => {

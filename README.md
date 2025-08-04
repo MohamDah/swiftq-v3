@@ -1,89 +1,156 @@
-# SwiftQ
+# SwiftQ - Queue Management System
 
-SwiftQ is a modern web application designed to streamline queue management through QR code technology. It allows users to create, scan, and manage queues efficiently.
+SwiftQ is a modern web-based queue management system designed to streamline waiting experiences in various settings such as restaurants, clinics, offices, or any place where people need to wait in line. The application allows businesses to create and manage virtual queues, while providing customers with real-time updates about their position in line.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the Application](#running-the-application)
-- [Project Structure](#project-structure)
-- [License](#license)
-
-## Overview
-
-SwiftQ leverages QR code technology to create a seamless queuing experience. Users can generate QR codes for queues, scan them to join, and manage their position in line—all from their mobile devices.
+![SwiftQ Logo](/public/swiftqIcon.png)
 
 ## Features
 
-- QR code generation and scanning
-- Real-time queue management
-- User authentication via Firebase
-- Responsive design for mobile and desktop
-- Date formatting utilities
+### For Queue Hosts
+
+- **Easy Queue Creation**: Create queues with customizable settings
+- **Real-time Queue Management**: View and manage customers in your queues
+- **Customer Notification**: Notify customers when it's their turn
+- **QR Code Generation**: Generate scannable QR codes for easy queue joining
+- **Wait Time Estimation**: Set estimated wait times per customer
+- **Analytics**: View statistics about queue performance and wait times
+- **Multiple Queue Support**: Create and manage multiple queues simultaneously
+
+### For Customers
+
+- **Simple Queue Joining**: Join queues through QR codes or queue codes
+- **Real-time Position Updates**: See position in queue and estimated wait time
+- **Notifications**: Receive notifications when it's their turn
+- **No Account Required**: Join queues without creating an account
 
 ## Technologies Used
 
-- **Frontend**: React 19 with TypeScript
-- **Routing**: React Router DOM 7
-- **Styling**: TailwindCSS
-- **QR Code**: QRCode.react (generation) and HTML5-QRCode (scanning)
-- **Authentication/Backend**: Firebase 11
-- **Date Handling**: date-fns
-- **Icons**: Lucide React
-- **Build Tools**: Vite 7, TypeScript, SWC
-- **Linting**: ESLint 9
+- **Frontend**: React with TypeScript, Tailwind CSS
+- **Backend**: Firebase (Authentication, Firestore, Cloud Functions)
+- **Routing**: React Router v7
+- **UI Components**: Custom components with Tailwind
+- **QR Code**: qrcode.react for generation
+- **Notifications**: Browser notifications and audio alerts
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (latest LTS version recommended)
-- npm or yarn package manager
+- Node.js (v18 or higher recommended)
+- npm or yarn
+- Firebase account
 
 ### Installation
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd foundations-project
-   ```
+1. Clone the repository
+```bash
+git clone https://github.com/MohamDahALU/foundations-swiftq.git
+cd foundations-swiftq
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+2. Install dependencies
+```bash
+npm install
+# or
+yarn
+```
 
-### Running the Application
+3. Create a Firebase project
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+   - Set up Authentication (Email/Password)
+   - Set up Firestore Database
 
-- **Development Mode**:
-  ```bash
-  npm run dev
-  ```
+4. Configure Firebase credentials
+   - Create a `.env` file in the root directory
+   - Add your Firebase configuration:
 
-- **Build for Production**:
-  ```bash
-  npm run build
-  ```
+```
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+```
+
+5. Start the development server
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+6. Open your browser and navigate to `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+# or
+yarn build
+```
+
+## Usage Guide
+
+### Host Flow
+
+1. **Create an Account/Sign In**
+   - Register as a new user or sign in with existing credentials
+
+2. **Create a Queue**
+   - Click "Create Queue" and fill in the queue details
+   - Set queue name, enable/disable name requirement, and set estimated wait time per customer
+
+3. **Manage Your Queue**
+   - View all customers in your queue
+   - Serve customers when it's their turn
+   - Skip customers if needed
+   - Generate QR codes for easy joining
+
+4. **View Analytics**
+   - Track queue performance metrics
+   - Analyze wait times and customer flow
+
+### Customer Flow
+
+1. **Join a Queue**
+   - Scan the QR code provided by the host
+   - Or enter the queue code manually on the join page
+   - Fill in required information (name if required)
+
+2. **Monitor Position**
+   - View real-time position in queue
+   - See estimated wait time
+   - Receive notification when it's your turn
 
 ## Project Structure
 
 ```
-foundations-project/
-├── index.html           # Entry HTML file
-├── src/
-│   ├── main.tsx         # React entry point
-│   ├── App.tsx          # Main application component
-│   └── globals.css      # Global styles
+foundations-swiftq/
 ├── public/              # Static assets
-│   └── swiftqIcon.png   # Application favicon
-└── package.json         # Project dependencies and scripts
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── context/         # React context providers
+│   ├── firebase/        # Firebase configuration and services
+│   │   ├── config.ts    # Firebase initialization
+│   │   ├── schema.ts    # TypeScript interfaces for data models
+│   │   └── services/    # Firebase service functions
+│   ├── pages/           # Application pages/routes
+│   ├── utils/           # Utility functions
+│   ├── App.tsx          # Main app component with routing
+│   └── main.tsx         # Entry point
+├── .env                 # Environment variables (not in repo)
+└── package.json         # Project dependencies
 ```
 
-## License
+## Team
 
-[Add your license information here]
+This project was developed by:
+
+- Mohamed Dahab - Lead Developer & Project Coordinator
+- Josiane Mukeshimana - Frontend Developer & Component Specialist
+- Ihuoma Goodluck Ogbonna - Backend Developer & Firebase Expert
+- Joshua Chukwuebuka Moses - UI Designer & Frontend Implementation
+- Fawziyyah Oke - Project Manager & User Experience Designer
+- Hassan Luqman - Technical Architect & Code Reviewer

@@ -8,12 +8,13 @@ import {
   where,
   orderBy,
   getDocs,
-  deleteDoc
+  deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../config";
 import { getAuth } from "firebase/auth";
 import type { Queue, Customer } from "../schema";
-import { generateId } from "../../utils";
+import { generateId } from "../../utils/utils";
 
 // Host functions - require authentication
 export const createQueue = async (
@@ -46,7 +47,9 @@ export const createQueue = async (
   }
 };
 
-export const getHostQueues = async (): Promise<{ id: string, data: Queue; }[]> => {
+export const getHostQueues = async (): Promise<
+  { id: string; data: Queue }[]
+> => {
   try {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -62,9 +65,9 @@ export const getHostQueues = async (): Promise<{ id: string, data: Queue; }[]> =
     );
 
     const querySnapshot = await getDocs(queuesQuery);
-    return querySnapshot.docs.map(doc => ({
+    return querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      data: doc.data() as Queue
+      data: doc.data() as Queue,
     }));
   } catch (error) {
     console.error("Error fetching queues:", error);
@@ -73,7 +76,9 @@ export const getHostQueues = async (): Promise<{ id: string, data: Queue; }[]> =
 };
 // Public functions - no auth required
 
-export const getQueueCustomers = async (queueId: string): Promise<{ id: string, data: Customer; }[]> => {
+export const getQueueCustomers = async (
+  queueId: string
+): Promise<{ id: string; data: Customer }[]> => {
   const customersRef = collection(db, "queues", queueId, "customers");
   const customersQuery = query(
     customersRef,
@@ -83,26 +88,27 @@ export const getQueueCustomers = async (queueId: string): Promise<{ id: string, 
   const customersSnapshot = await getDocs(customersQuery);
   console.log(customersSnapshot);
 
-  return customersSnapshot.docs.map(i => ({
+  return customersSnapshot.docs.map((i) => ({
     id: i.id,
-    data: i.data() as Customer
+    data: i.data() as Customer,
   }));
-
 };
 
-export const getQueue = async (queueId: string): Promise<{ id: string, data: Queue; } | null> => {
+export const getQueue = async (
+  queueId: string
+): Promise<{ id: string; data: Queue } | null> => {
   try {
     const queuesQuery = query(
       collection(db, "queues"),
       where("id", "==", queueId.toUpperCase())
     );
     const querySnapshot = await getDocs(queuesQuery);
-    
+
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
       return {
         id: doc.id,
-        data: doc.data() as Queue
+        data: doc.data() as Queue,
       };
     } else {
       return null;
@@ -148,29 +154,35 @@ export const joinQueue = async (
 
     // Sort the results to find the highest position
     const sortedCustomers = customersSnapshot.docs
-      .map(doc => doc.data() as Customer)
+      .map((doc) => doc.data() as Customer)
       .sort((a, b) => b.position - a.position);
 
-    const position = sortedCustomers.length > 0 ? sortedCustomers[0].position + 1 : 1;
+    const position =
+      sortedCustomers.length > 0 ? sortedCustomers[0].position + 1 : 1;
 
     // Add the customer to the queue
-    const customerRef = await addDoc(collection(db, "queues", queueId, "customers"), {
-      name: customerName || `Customer ${position}`,
-      joinedAt: serverTimestamp(),
-      position,
-      status: "waiting",
-      notified: false
-    });
+    const customerRef = await addDoc(
+      collection(db, "queues", queueId, "customers"),
+      {
+        name: customerName || `Customer ${position}`,
+        joinedAt: serverTimestamp(),
+        position,
+        status: "waiting",
+        notified: false,
+      }
+    );
 
     // Save customer ID in localStorage for quick access
-    const queueHistory = JSON.parse(localStorage.getItem('queue_history') || '[]');
+    const queueHistory = JSON.parse(
+      localStorage.getItem("queue_history") || "[]"
+    );
     queueHistory.push({
       queueId,
       queueName: queueData.queueName,
       customerId: customerRef.id,
-      joinedAt: new Date().toISOString()
+      joinedAt: new Date().toISOString(),
     });
-    localStorage.setItem('queue_history', JSON.stringify(queueHistory));
+    localStorage.setItem("queue_history", JSON.stringify(queueHistory));
 
     return customerRef.id;
   } catch (error) {
@@ -179,7 +191,10 @@ export const joinQueue = async (
   }
 };
 
-export const getCustomerStatus = async (queueId: string, customerId: string): Promise<Customer | null> => {
+export const getCustomerStatus = async (
+  queueId: string,
+  customerId: string
+): Promise<Customer | null> => {
   try {
     const customerRef = doc(db, "queues", queueId, "customers", customerId);
     const customerSnap = await getDoc(customerRef);
@@ -195,9 +210,12 @@ export const getCustomerStatus = async (queueId: string, customerId: string): Pr
   }
 };
 
-export const getCustomerPosition = async (queueId: string, customerId: string): Promise<{
-  position: number,
-  totalAhead: number,
+export const getCustomerPosition = async (
+  queueId: string,
+  customerId: string
+): Promise<{
+  position: number;
+  totalAhead: number;
   estimatedWaitTime: number | null;
 }> => {
   try {
@@ -240,7 +258,7 @@ export const getCustomerPosition = async (queueId: string, customerId: string): 
     return {
       position: customerData.position,
       totalAhead,
-      estimatedWaitTime
+      estimatedWaitTime,
     };
   } catch (error) {
     console.error("Error calculating position:", error);
@@ -248,25 +266,23 @@ export const getCustomerPosition = async (queueId: string, customerId: string): 
   }
 };
 
-
 export const deleteQueue = async (queueId: string) => {
-  const queueRef = doc(db, "queues", queueId)
-  await deleteDoc(queueRef)
-}
+  const queueRef = doc(db, "queues", queueId);
+  await deleteDoc(queueRef);
+};
 
 // Analytics functions - require authentication
-export const getQueueAnalytics = async (queueId: string): Promise<{ id: string, data: Customer; }[]> => {
+export const getQueueAnalytics = async (
+  queueId: string
+): Promise<{ id: string; data: Customer }[]> => {
   try {
     const customersRef = collection(db, "queues", queueId, "customers");
-    const customersQuery = query(
-      customersRef,
-      where("status", "==", "served")
-    );
+    const customersQuery = query(customersRef, where("status", "==", "served"));
 
     const customersSnapshot = await getDocs(customersQuery);
-    return customersSnapshot.docs.map(i => ({
+    return customersSnapshot.docs.map((i) => ({
       id: i.id,
-      data: i.data() as Customer
+      data: i.data() as Customer,
     }));
   } catch (error) {
     console.error("Error fetching queue analytics:", error);
@@ -274,7 +290,13 @@ export const getQueueAnalytics = async (queueId: string): Promise<{ id: string, 
   }
 };
 
-export const getAllCustomersForHost = async (): Promise<{ queueId: string, queueName: string, customers: { id: string, data: Customer; }[] }[]> => {
+export const getAllCustomersForHost = async (): Promise<
+  {
+    queueId: string;
+    queueName: string;
+    customers: { id: string; data: Customer }[];
+  }[]
+> => {
   try {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -291,20 +313,70 @@ export const getAllCustomersForHost = async (): Promise<{ queueId: string, queue
     for (const queue of queues) {
       const customersRef = collection(db, "queues", queue.id, "customers");
       const customersSnapshot = await getDocs(customersRef);
-      
+
       result.push({
         queueId: queue.id,
         queueName: queue.data.queueName,
-        customers: customersSnapshot.docs.map(doc => ({
+        customers: customersSnapshot.docs.map((doc) => ({
           id: doc.id,
-          data: doc.data() as Customer
-        }))
+          data: doc.data() as Customer,
+        })),
       });
     }
 
     return result;
   } catch (error) {
     console.error("Error fetching all customer data:", error);
+    throw error;
+  }
+};
+
+// Function to handle customer exiting a queue
+export const exitQueue = async (
+  queueId: string,
+  customerId: string
+): Promise<void> => {
+  try {
+    const customerRef = doc(db, "queues", queueId, "customers", customerId);
+    await updateDoc(customerRef, {
+      status: "exited",
+      exitedAt: serverTimestamp(),
+    });
+
+    // Save to local storage history that this customer exited
+    const queueHistory = JSON.parse(
+      localStorage.getItem("queue_history") || "[]"
+    );
+
+    // Update the queue history to mark this customer as exited
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatedHistory = queueHistory.map((item: any) => {
+      if (item.customerId === customerId && item.queueId === queueId) {
+        return { ...item, exited: true, exitedAt: new Date().toISOString() };
+      }
+      return item;
+    });
+
+    localStorage.setItem("queue_history", JSON.stringify(updatedHistory));
+  } catch (error) {
+    console.error("Error exiting queue:", error);
+    throw error;
+  }
+};
+
+// Function to handle host removing a customer from queue
+export const removeCustomer = async (
+  queueId: string,
+  customerId: string
+): Promise<void> => {
+  try {
+    const customerRef = doc(db, "queues", queueId, "customers", customerId);
+    await updateDoc(customerRef, {
+      status: "removed",
+      removedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error removing customer:", error);
     throw error;
   }
 };

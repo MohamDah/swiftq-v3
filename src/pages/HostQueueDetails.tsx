@@ -1,23 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, collection, query, where, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../firebase/config';
-import type { Queue, Customer } from '../../../firebase/schema';
+import { db } from '../firebase/config';
+import type { Queue, Customer } from '../firebase/schema';
 import { formatDistance } from 'date-fns';
+import { useAuth } from '../context/AuthContext'; // Import useAuth hook
+import { removeCustomer } from '../firebase/services/queues'; // Import the new function
 
 type QueueCustomer = {
   id: string;
   data: Customer;
 };
 
+// /my-queues/:queueId
 export default function HostQueueDetails() {
   const { queueId } = useParams<{ queueId: string; }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth(); // Get current user from auth context
   const [queue, setQueue] = useState<{ id: string, data: Queue; } | null>(null);
   const [customers, setCustomers] = useState<QueueCustomer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isQueueActive, setIsQueueActive] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   // Calculate average time
   const avgWaitTime = useMemo(() => queue?.data.waitTimes ? queue?.data.waitTimes.reduce((a, i) => a + i, 0) / queue?.data.waitTimes.length : null, [queue?.data.waitTimes]);
@@ -25,6 +30,11 @@ export default function HostQueueDetails() {
   // Set up real-time listeners for queue and customers
   useEffect(() => {
     if (!queueId) return;
+    if (!currentUser) {
+      setIsAuthorized(false);
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
 
@@ -38,8 +48,15 @@ export default function HostQueueDetails() {
             id: doc.id,
             data: doc.data() as Queue
           };
-          setQueue(queueData);
-          setIsQueueActive(queueData.data.isActive);
+          
+          // Check if current user is the owner of the queue
+          if (queueData.data.hostId === currentUser.uid) {
+            setIsAuthorized(true);
+            setQueue(queueData);
+            setIsQueueActive(queueData.data.isActive);
+          } else {
+            setIsAuthorized(false);
+          }
           setIsLoading(false);
         } else {
           setError("Queue not found.");
@@ -53,35 +70,41 @@ export default function HostQueueDetails() {
       }
     );
 
-    // Set up listener for customers collection
-    const customersRef = collection(db, "queues", queueId, "customers");
-    const customersQuery = query(
-      customersRef,
-      where("status", "in", ["waiting", "notified"]),
-    );
+    // Only set up customer listener if user is authorized
+    let unsubscribeCustomers = () => {};
+    
+    if (isAuthorized) {
+      // Set up listener for customers collection
+      const customersRef = collection(db, "queues", queueId, "customers");
+      const customersQuery = query(
+        customersRef,
+        where("status", "in", ["waiting", "notified", "exited"]),
+      );
 
-
-    const unsubscribeCustomers = onSnapshot(customersQuery,
-      (snapshot) => {
-        const customersList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          data: doc.data() as Customer
-        }))
-          .sort((a, b) => a.data.position - b.data.position);
-        setCustomers(customersList);
-      },
-      (err) => {
-        console.error("Error listening to customers:", err);
-        setError("Failed to load customers data.");
-      }
-    );
+      unsubscribeCustomers = onSnapshot(customersQuery,
+        (snapshot) => {
+          const customersList = snapshot.docs.map(doc => ({
+            id: doc.id,
+            data: doc.data() as Customer
+          }))
+            .sort((a, b) => a.data.position - b.data.position)
+            // Filter out exited customers from the active display
+            .filter(customer => customer.data.status !== "exited");
+          setCustomers(customersList);
+        },
+        (err) => {
+          console.error("Error listening to customers:", err);
+          setError("Failed to load customers data.");
+        }
+      );
+    }
 
     // Clean up listeners when component unmounts
     return () => {
       unsubscribeQueue();
       unsubscribeCustomers();
     };
-  }, [queueId]);
+  }, [queueId, currentUser, isAuthorized]);
 
   // Toggle queue active state
   const toggleQueueStatus = async () => {
@@ -132,9 +155,9 @@ export default function HostQueueDetails() {
       await updateDoc(customerRef, {
         notified: true,
         status: "notified",
-        notifiedAt: serverTimestamp()
+        notifiedAt: serverTimestamp(), 
+        lastNotifiedAt: serverTimestamp()
       });
-      // No need to manually refresh - listeners will handle it
     } catch (err) {
       console.error("Error notifying customer:", err);
       setError("Failed to notify customer.");
@@ -162,6 +185,21 @@ export default function HostQueueDetails() {
     return duration;
   };
 
+  // Add function to handle removing a customer
+  const handleRemoveCustomer = async (customerId: string) => {
+    if (!queueId) return;
+
+    if (confirm('Are you sure you want to remove this customer from the queue?')) {
+      try {
+        await removeCustomer(queueId, customerId);
+        // No need to update state manually as the listener will handle it
+      } catch (err) {
+        console.error("Error removing customer:", err);
+        setError("Failed to remove customer.");
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
@@ -170,15 +208,15 @@ export default function HostQueueDetails() {
     );
   }
 
-  if (error || !queue) {
+  if (error || !queue || !isAuthorized) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 flex flex-col items-center">
           <h2 className="text-xl font-bold text-red-600">Error</h2>
-          <p className="mt-2">{error || "Queue not found"}</p>
+          <p className="mt-2">{error || "Queue not found or you don't have access"}</p>
           <button
             onClick={() => navigate('/my-queues')}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
           >
             Back to My Queues
           </button>
@@ -277,7 +315,7 @@ export default function HostQueueDetails() {
             </div>
           ) : (
             <div className="space-y-4 my-3">
-              {customers.map((customer, index) => (
+              {customers.map((customer) => (
                 <div
                   key={customer.id}
                   className={`mx-2 p-2 rounded-md bg-primary/40`}
@@ -285,12 +323,12 @@ export default function HostQueueDetails() {
                   <div className="flex sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                        <span className="font-medium text-green-800">#{customer.data.position.toString().padStart(3, "0")}</span>
+                        <span className="font-medium text-green-800">#{customer.data.position.toString().padStart(2, "0")}</span>
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900">
                           {customer.data.name} {" "}
-                          <span className='text-xs'>#{customer.data.position.toString().padStart(3, "0")}</span>
+                          <span className='text-xs'>#{customer.data.position.toString().padStart(2, "0")}</span>
                         </h3>
                         <div className="flex flex-col items-start mt-1">
                           <span className="text-sm text-gray-600">Wait: {getWaitTimeDisplay(customer)}</span>
@@ -305,13 +343,14 @@ export default function HostQueueDetails() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 self-center">
-                      {customer.data.status === 'waiting' && index === 0 && (
+                    <div className="flex gap-3 self-center justify-end flex-wrap max-w-40">
+                      {/* Modified to allow notifying at any time if customer is in waiting or notified status */}
+                      {(customer.data.status === 'waiting' || customer.data.status === 'notified') && (
                         <button
                           onClick={() => notifyCustomer(customer.id)}
                           className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
                         >
-                          Notify
+                          {customer.data.status === 'notified' ? 'Notify Again' : 'Notify'}
                         </button>
                       )}
                       <button
@@ -319,6 +358,12 @@ export default function HostQueueDetails() {
                         className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200"
                       >
                         Serve
+                      </button>
+                      <button
+                        onClick={() => handleRemoveCustomer(customer.id)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-red-700 bg-red-100 hover:bg-red-200"
+                      >
+                        Skip
                       </button>
                     </div>
                   </div>
