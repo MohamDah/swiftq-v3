@@ -32,6 +32,9 @@ SwiftQ is a modern web-based queue management system designed to streamline wait
 - **QR Code**: qrcode.react for generation
 - **Notifications**: Browser notifications and audio alerts
 
+## Live Site:
+- [SwiftQ - V2](https://swiftq-v2.netlify.app/)
+
 ## Getting Started
 
 ### Prerequisites
@@ -44,8 +47,8 @@ SwiftQ is a modern web-based queue management system designed to streamline wait
 
 1. Clone the repository
 ```bash
-git clone https://github.com/MohamDahALU/foundations-swiftq.git
-cd foundations-swiftq
+git clone https://github.com/MohamDah/swiftq-v2.git
+cd swiftq-v2
 ```
 
 2. Install dependencies
