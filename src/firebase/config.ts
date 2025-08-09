@@ -1,6 +1,7 @@
 // src/firebase/config.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getMessaging, isSupported, type Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,5 +15,20 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+export const getMessagingInstance = async (): Promise<Messaging | null> => {
+  if (typeof window === "undefined") return null
+
+  try {
+    const supported = await isSupported()
+    if (supported)
+      return getMessaging(app)
+    else
+      throw new Error("Not Supported!")
+  } catch (error) {
+    console.warn("Firbase messaging not supported:", error)
+    return null
+  }
+}
 
 export { db };

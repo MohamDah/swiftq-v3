@@ -27,7 +27,13 @@ export interface Customer {
   servedAt?: Timestamp;
   exitedAt?: Timestamp; // Added timestamp for when customer exited
   lastNotifiedAt?: Timestamp; // Timestamp of the most recent notification
+
+  // Notification fields
+  fcmToken?: string;
+  notificationsEnabled?: boolean;
+  tokenUpdatedAt?: string;
 }
+
 
 export interface CustomerItem {
   id: string;
