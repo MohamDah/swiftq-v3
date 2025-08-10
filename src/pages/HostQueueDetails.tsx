@@ -5,7 +5,7 @@ import { db } from '../firebase/config';
 import type { Queue, Customer } from '../firebase/schema';
 import { formatDistance } from 'date-fns';
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
-import { removeCustomer } from '../firebase/services/queues'; // Import the new function
+import { removeCustomer, sendCustomerNotification } from '../firebase/services/queues'; // Import the new function
 
 type QueueCustomer = {
   id: string;
@@ -151,6 +151,7 @@ export default function HostQueueDetails() {
     if (!queueId) return;
 
     try {
+      // Update customer status in Firestore
       const customerRef = doc(db, "queues", queueId, "customers", customerId);
       await updateDoc(customerRef, {
         notified: true,
@@ -158,6 +159,9 @@ export default function HostQueueDetails() {
         notifiedAt: serverTimestamp(), 
         lastNotifiedAt: serverTimestamp()
       });
+
+      // Send push notification
+      await sendCustomerNotification(queueId, customerId)
     } catch (err) {
       console.error("Error notifying customer:", err);
       setError("Failed to notify customer.");

@@ -16,6 +16,12 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import type { Customer, Queue, QueueItem } from '../firebase/schema';
+import { 
+  requestNotificationPermission, 
+  storeCustomerFCMToken, 
+  onForegroundMessage,
+  showNotification 
+} from '../firebase/messaging';
 
 // /queue/:queueId/customer/:customerId
 export default function CustomerView() {
@@ -32,6 +38,8 @@ export default function CustomerView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exitingQueue, setExitingQueue] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationPermissionAsked, setNotificationPermissionAsked] = useState(false);
   
   // Add ref for previous customer status
   const prevCustomerStatusRef = useRef<string | null>(null);
@@ -274,6 +282,106 @@ export default function CustomerView() {
     }
   };
 
+  // Check if we should show the notification prompt
+  const renderNotificationPrompt = () => {
+    // Don't show if already enabled, if permission was denied, or if customer is done
+    if (notificationsEnabled || 
+        notificationPermissionAsked || 
+        customer?.status === 'served' || 
+        customer?.status === 'removed') {
+      return null;
+    }
+
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 mt-4">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            {/* Bell icon */}
+            <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5-5 5-5h-5m-6 10h5l-5-5 5-5H9z" />
+            </svg>
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-sm font-medium text-blue-800">
+              Get Notified When It's Your Turn
+            </h3>
+            <p className="mt-1 text-sm text-blue-700">
+              Receive push notifications even when this tab isn't active, so you don't have to keep checking.
+            </p>
+          </div>
+          <div className="ml-4 flex-shrink-0">
+            <button
+              onClick={enableNotifications}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
+            >
+              Enable Notifications
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    // Check if user has already enabled notifications
+    const checkNotificationStatus = () => {
+      if ('Notification' in window) {
+        const permission = Notification.permission;
+        if (permission === 'granted') {
+          setNotificationsEnabled(true);
+        } else if (permission === 'denied') {
+          setNotificationPermissionAsked(true);
+        }
+      }
+    };
+
+    checkNotificationStatus();
+
+    // Set up foreground message listener
+    onForegroundMessage((payload) => {
+      console.log('Foreground message received:', payload);
+      
+      // Play your existing sound
+      playNotificationSound();
+      
+      // Show browser notification
+      showNotification({
+        title: payload.notification?.title || 'SwiftQ Notification',
+        body: payload.notification?.body || "It's your turn!",
+        data: {
+          queueId: payload.data?.queueId,
+          customerId: payload.data?.customerId
+        }
+      });
+    }).catch(console.error);
+  }, []);
+
+  // Add this function to handle enabling notifications
+  const enableNotifications = async () => {
+    if (!queueId || !customerId) {
+      console.error('Missing queueId or customerId');
+      return;
+    }
+    
+    try {
+      setNotificationPermissionAsked(true);
+      
+      // Request permission and get token
+      const token = await requestNotificationPermission();
+      
+      if (token) {
+        // Store the token with the customer record
+        await storeCustomerFCMToken(queue?.id || "", customerId, token);
+        setNotificationsEnabled(true);
+        console.log('Notifications enabled successfully!');
+      } else {
+        console.log('Failed to get notification permission');
+      }
+    } catch (error) {
+      console.error('Error enabling notifications:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow text-center">
@@ -378,6 +486,8 @@ export default function CustomerView() {
           </button>
         )}
       </div>
+
+      {renderNotificationPrompt()}
     </div>
   );
 }

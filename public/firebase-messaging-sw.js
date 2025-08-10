@@ -7,59 +7,61 @@ firebase.initializeApp({
   apiKey: "AIzaSyAgHGWoN_SEbQMH3wa7eZp8NfKQWdVXQaI",
   authDomain: "foundations-swiftq.firebaseapp.com",
   projectId: "foundations-swiftq",
-  storageBucket: "oundations-swiftq.firebasestorage.app",
+  storageBucket: "foundations-swiftq.firebasestorage.app",
   messagingSenderId: "1011952216751",
   appId: "1:1011952216751:web:123894d316950d1489c25a",
+  measurementId: "G-94XWJ2EMZQ"
 });
 
 const messaging = firebase.messaging();
 
-// function to run when notificiation arrives and the app is closed
+// This function runs when a notification arrives and the app is closed/hidden
 messaging.onBackgroundMessage((payload) => {
-  console.log("Received background message:", payload);
-
+  console.log('Received background message:', payload);
+  
   // Extract notification data
-  const notificationTitle = payload.notification?.title || "SwiftQ Notification";
+  const notificationTitle = payload.notification?.title || 'SwiftQ Notification';
   const notificationOptions = {
-    body: payload.notification?.body || "You have a new notification from SwiftQ",
-    icon: "/swiftqIcon.png",
-    badge: "/swiftqIcon.png",
-    tag: "swiftq-queue-notification",
-    data: payload.data,
-    actions: [
+    body: payload.notification?.body || 'You have a new notification from SwiftQ',
+    icon: '/swiftqIcon.png',
+    badge: '/swiftqIcon.png',
+    tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
+    data: payload.data, // Custom data we can use later
+    actions: [ // These create buttons on the notification
       {
-        action: "view",
-        title: "View Queue"
-      }, 
+        action: 'view',
+        title: 'View Queue'
+      },
       {
-        action: "dismiss",
-        title: "Dismiss"
+        action: 'dismiss', 
+        title: 'Dismiss'
       }
     ],
-    requireInteraction: true
-  }
+    requireInteraction: true // Notification stays until user acts
+  };
 
-  // show notification
-  self.ServiceWorkerRegistration.showNotification(notificationTitle, notificationOptions)
+  // Show the notification
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle when user clicks on the notification
-self.addEventListener("notificationclick", (event) => {
-  console.log("Notification clicked:", event)
-
-  event.notification.close()
-
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked:', event);
+  
+  // Close the notification
+  event.notification.close();
+  
   // Handle different actions
-  if (event.action === "view") {
+  if (event.action === 'view') {
     // Get the queue info from the notification data
-    const queueId = event.notification.data?.queueId
-    const customerId = event.notification.data?.customerId
-
+    const queueId = event.notification.data?.queueId;
+    const customerId = event.notification.data?.customerId;
+    
     if (queueId && customerId) {
       // Open the queue page
-      const url = `https://swiftq-v2.netlify.app/queue/${queueId}/customer/${customerId}`
-      event.waitUntil(clients.openWindow(url))
+      const url = `https://swiftq-v2.netlify.app/queue/${queueId}/customer/${customerId}`;
+      event.waitUntil(clients.openWindow(url));
     }
   }
-  // If action is 'dismiss' or no action, just close
-})
+  // If action is 'dismiss' or no action, just close (already done above)
+});

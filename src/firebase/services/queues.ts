@@ -380,3 +380,54 @@ export const removeCustomer = async (
     throw error;
   }
 };
+
+
+// Function to push notifications
+export const sendCustomerNotification = async (
+  queueId: string,
+  customerId: string,
+): Promise<void> => {
+  try {
+    // Get customer data to check if they have notifications enabled
+    const customerRef = doc(db, "queues", queueId, "customers", customerId)
+    const customerDoc = await getDoc(customerRef)
+
+    if (!customerDoc.exists()) 
+      throw new Error("Customer not found")
+
+    const customerData = customerDoc.data() as Customer
+
+    // Only proceed if customer has notifications enabled and has a token
+    if (!customerData.fcmToken || !customerData.notificationsEnabled) {
+      console.log("Customer does not have notifications enabled")
+      return
+    }
+
+    // Get queue data for the notification message
+    const queueDoc = await getDoc(doc(db, "queues", queueId))
+    if (!queueDoc.exists())
+      throw new Error("Queue not found")
+
+    const queueData = queueDoc.data() as Queue
+
+    // Create a notification document that a Cloud Function can process
+    // For now use a simple approach, later use Firbase Cloud Functions
+    const notificationData = {
+      type: "customer_notification",
+      queueId,
+      customerId,
+      queueName: queueData.queueName,
+      customerName: customerData.name,
+      customerPosition: customerData.position,
+      fcmToken: customerData.fcmToken,
+      createdAt: serverTimestamp(),
+      processed: false
+    }
+
+    await addDoc(collection(db, "notifications"), notificationData)
+    console.log("Notification queued for processing")
+  } catch (error) {
+    console.error("Error sending customer notification:", error)
+    throw error;
+  }
+}
