@@ -327,7 +327,7 @@ export default function CustomerView() {
     const checkNotificationStatus = () => {
       if ('Notification' in window) {
         const permission = Notification.permission;
-        if (permission === 'granted') {
+        if (permission === 'granted' && customer?.notificationsEnabled) {
           setNotificationsEnabled(true);
         } else if (permission === 'denied') {
           setNotificationPermissionAsked(true);

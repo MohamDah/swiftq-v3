@@ -48,7 +48,7 @@ export const createQueue = async (
 };
 
 export const getHostQueues = async (): Promise<
-  { id: string; data: Queue }[]
+  { id: string; data: Queue; }[]
 > => {
   try {
     const auth = getAuth();
@@ -78,7 +78,7 @@ export const getHostQueues = async (): Promise<
 
 export const getQueueCustomers = async (
   queueId: string
-): Promise<{ id: string; data: Customer }[]> => {
+): Promise<{ id: string; data: Customer; }[]> => {
   const customersRef = collection(db, "queues", queueId, "customers");
   const customersQuery = query(
     customersRef,
@@ -96,7 +96,7 @@ export const getQueueCustomers = async (
 
 export const getQueue = async (
   queueId: string
-): Promise<{ id: string; data: Queue } | null> => {
+): Promise<{ id: string; data: Queue; } | null> => {
   try {
     const queuesQuery = query(
       collection(db, "queues"),
@@ -274,7 +274,7 @@ export const deleteQueue = async (queueId: string) => {
 // Analytics functions - require authentication
 export const getQueueAnalytics = async (
   queueId: string
-): Promise<{ id: string; data: Customer }[]> => {
+): Promise<{ id: string; data: Customer; }[]> => {
   try {
     const customersRef = collection(db, "queues", queueId, "customers");
     const customersQuery = query(customersRef, where("status", "==", "served"));
@@ -294,7 +294,7 @@ export const getAllCustomersForHost = async (): Promise<
   {
     queueId: string;
     queueName: string;
-    customers: { id: string; data: Customer }[];
+    customers: { id: string; data: Customer; }[];
   }[]
 > => {
   try {
@@ -383,36 +383,36 @@ export const removeCustomer = async (
 
 
 // Function to push notifications
+// Update your existing function to call the Netlify function
 export const sendCustomerNotification = async (
   queueId: string,
   customerId: string,
 ): Promise<void> => {
   try {
     // Get customer data to check if they have notifications enabled
-    const customerRef = doc(db, "queues", queueId, "customers", customerId)
-    const customerDoc = await getDoc(customerRef)
+    const customerRef = doc(db, "queues", queueId, "customers", customerId);
+    const customerDoc = await getDoc(customerRef);
 
-    if (!customerDoc.exists()) 
-      throw new Error("Customer not found")
+    if (!customerDoc.exists())
+      throw new Error("Customer not found");
 
-    const customerData = customerDoc.data() as Customer
+    const customerData = customerDoc.data() as Customer;
 
     // Only proceed if customer has notifications enabled and has a token
     if (!customerData.fcmToken || !customerData.notificationsEnabled) {
-      console.log("Customer does not have notifications enabled")
-      return
+      console.log("Customer does not have notifications enabled");
+      return;
     }
 
     // Get queue data for the notification message
-    const queueDoc = await getDoc(doc(db, "queues", queueId))
+    const queueDoc = await getDoc(doc(db, "queues", queueId));
     if (!queueDoc.exists())
-      throw new Error("Queue not found")
+      throw new Error("Queue not found");
 
-    const queueData = queueDoc.data() as Queue
+    const queueData = queueDoc.data() as Queue;
 
-    // Create a notification document that a Cloud Function can process
-    // For now use a simple approach, later use Firbase Cloud Functions
-    const notificationData = {
+    // Create a notification document for tracking
+    /*const notificationRef = */ await addDoc(collection(db, "notifications"), {
       type: "customer_notification",
       queueId,
       customerId,
@@ -422,12 +422,59 @@ export const sendCustomerNotification = async (
       fcmToken: customerData.fcmToken,
       createdAt: serverTimestamp(),
       processed: false
+    });
+
+    // Call the Netlify function to send the notification
+    try {
+      console.log("Calling Netlify function to send notification...");
+      const response = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: customerData.fcmToken,
+          title: `${queueData.queueName} - It's Your Turn!`,
+          body: `${customerData.name}, you're up! Position #${customerData.position}`,
+          queueId,
+          customerId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log("Push notification sent successfully:", result);
+
+        // Update notification record
+        // await updateDoc(notificationRef, {
+        //   processed: true,
+        //   sentAt: serverTimestamp(),
+        //   success: true,
+        //   messageId: result.messageId
+        // });
+      } else {
+        throw new Error(result.error || 'Failed to send notification');
+      }
+
+    } catch (fcmError) {
+      console.error("Error sending push notification:", fcmError);
+
+      // Update notification record with error
+      // await updateDoc(notificationRef, {
+      //   processed: true,
+      //   error: typeof fcmError === 'object' ? JSON.stringify(fcmError) : String(fcmError),
+      //   sentAt: serverTimestamp(),
+      //   success: false
+      // });
     }
 
-    await addDoc(collection(db, "notifications"), notificationData)
-    console.log("Notification queued for processing")
   } catch (error) {
-    console.error("Error sending customer notification:", error)
+    console.error("Error in customer notification process:", error);
     throw error;
   }
-}
+};

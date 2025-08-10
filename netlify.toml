@@ -1,0 +1,17 @@
+[build]
+  command = "yarn build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[dev]
+  command = "yarn dev"
+  port = 8888        # Changed from 5173 to 8888
+  publish = "dist"
+  functions = "netlify/functions"
+  targetPort = 5173  # Keep this as 5173 (your Vite dev server)
+
+# Fix the redirect to not use /.netlify in the "from" path
+[[redirects]]
+  from = "/api/*"     # Changed from /.netlify/functions/* to /api/*
+  to = "/.netlify/functions/:splat"
+  status = 200
