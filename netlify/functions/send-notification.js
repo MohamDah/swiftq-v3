@@ -42,14 +42,14 @@ function initializeFirebaseAdmin() {
       }
     } else {
       // For local dev: use local file
-      console.log('Trying to load service account from local file');
-      try {
-        serviceAccount = require('../../service-account.json');
-        console.log('Successfully loaded service account from file');
-      } catch (fileError) {
-        console.error('Failed to load service-account.json:', fileError);
-        throw new Error('Could not load service account from file. Make sure service-account.json exists in the project root');
-      }
+      // console.log('Trying to load service account from local file');
+      // try {
+      //   serviceAccount = require('../../service-account.json');
+      //   console.log('Successfully loaded service account from file');
+      // } catch (fileError) {
+      //   console.error('Failed to load service-account.json:', fileError);
+      //   throw new Error('Could not load service account from file. Make sure service-account.json exists in the project root');
+      // }
     }
 
     // Validate service account
