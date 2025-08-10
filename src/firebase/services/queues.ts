@@ -387,6 +387,7 @@ export const removeCustomer = async (
 export const sendCustomerNotification = async (
   queueId: string,
   customerId: string,
+  queueCode: string
 ): Promise<void> => {
   try {
     // Get customer data to check if they have notifications enabled
@@ -437,7 +438,8 @@ export const sendCustomerNotification = async (
           title: `${queueData.queueName} - It's Your Turn!`,
           body: `${customerData.name}, you're up! Position #${customerData.position}`,
           queueId,
-          customerId
+          customerId,
+          queueCode
         })
       });
 

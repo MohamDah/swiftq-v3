@@ -104,9 +104,9 @@ exports.handler = async function(event, context) {
     
     // Parse the request body
     const data = JSON.parse(event.body);
-    const { token, title, body, queueId, customerId } = data;
+    const { token, title, body, queueId, customerId, queueCode } = data;
     
-    console.log('Processing notification request:', { title, queueId, customerId });
+    console.log('Processing notification request:', { title, queueId, customerId, queueCode });
     
     // Validate required fields
     if (!token) {
@@ -125,9 +125,10 @@ exports.handler = async function(event, context) {
       },
       data: {
         queueId: queueId || '',
+        queueCode: queueCode || '',
         customerId: customerId || '',
         timestamp: Date.now().toString(),
-        click_action: `https://swiftq-v2.netlify.app/queue/${queueId}/customer/${customerId}`
+        click_action: `https://swiftq-v2.netlify.app/queue/${queueCode}/customer/${customerId}`
       },
       token: token
     };

@@ -37,7 +37,7 @@ messaging.onBackgroundMessage((payload) => {
         title: 'Dismiss'
       }
     ],
-    requireInteraction: true // Notification stays until user acts
+    // requireInteraction: true // Notification stays until user acts
   };
 
   // Show the notification
@@ -52,14 +52,15 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
   // Handle different actions
-  if (event.action === 'view') {
+  if (event.action === 'view' || event.action !== "dismiss") {
     // Get the queue info from the notification data
     const queueId = event.notification.data?.queueId;
     const customerId = event.notification.data?.customerId;
+    const queueCode = event.notification.data?.queueCode;
     
     if (queueId && customerId) {
       // Open the queue page
-      const url = `https://swiftq-v2.netlify.app/queue/${queueId}/customer/${customerId}`;
+      const url = `https://swiftq-v2.netlify.app/queue/${queueCode}/customer/${customerId}`;
       event.waitUntil(clients.openWindow(url));
     }
   }

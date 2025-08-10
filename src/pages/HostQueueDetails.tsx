@@ -161,7 +161,7 @@ export default function HostQueueDetails() {
       });
 
       // Send push notification
-      await sendCustomerNotification(queueId, customerId)
+      await sendCustomerNotification(queueId, customerId, queue?.data.id || "")
     } catch (err) {
       console.error("Error notifying customer:", err);
       setError("Failed to notify customer.");
