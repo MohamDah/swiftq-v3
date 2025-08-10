@@ -427,7 +427,7 @@ export const sendCustomerNotification = async (
     // Call the Netlify function to send the notification
     try {
       console.log("Calling Netlify function to send notification...");
-      const response = await fetch('/api/send-notification', {
+      const response = await fetch('/.netlify/functions/send-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
