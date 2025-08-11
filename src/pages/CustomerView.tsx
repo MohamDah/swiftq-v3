@@ -19,7 +19,7 @@ import type { Customer, Queue, QueueItem } from '../firebase/schema';
 import {
   requestNotificationPermission,
   storeCustomerFCMToken,
-  onForegroundMessage,
+  // onForegroundMessage,
   // showNotification
 } from '../firebase/messaging';
 
@@ -338,26 +338,26 @@ export default function CustomerView() {
     checkNotificationStatus();
   }, [customer?.notificationsEnabled]);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    // Set up foreground message listener
-    onForegroundMessage((payload) => {
-      console.log('Foreground message received:', payload);
+  //   // Set up foreground message listener
+  //   onForegroundMessage((payload) => {
+  //     console.log('Foreground message received:', payload);
 
-      // Play your existing sound
-      playNotificationSound();
+  //     // Play your existing sound
+  //     playNotificationSound();
 
-      // Show browser notification
-      // showNotification({
-      //   title: payload.notification?.title || 'SwiftQ Notification',
-      //   body: payload.notification?.body || "It's your turn!",
-      //   data: {
-      //     queueId: payload.data?.queueId,
-      //     customerId: payload.data?.customerId
-      //   }
-      // });
-    }).catch(console.error);
-  }, []);
+  //     // Show browser notification
+  //     showNotification({
+  //       title: payload.notification?.title || 'SwiftQ Notification',
+  //       body: payload.notification?.body || "It's your turn!",
+  //       data: {
+  //         queueId: payload.data?.queueId,
+  //         customerId: payload.data?.customerId
+  //       }
+  //     });
+  //   }).catch(console.error);
+  // }, []);
 
   // Add this function to handle enabling notifications
   const enableNotifications = async () => {

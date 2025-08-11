@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { deleteToken, getToken, onMessage } from "firebase/messaging";
+import { deleteToken, getToken /*, onMessage */ } from "firebase/messaging";
 import { db, getMessagingInstance } from "./config";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -165,16 +165,16 @@ export const storeCustomerFCMToken = async (
 };
 
 // Step 3: Listen for notification when app is open
-export const onForegroundMessage = (callback: (payload: any) => void) => {
-  return getMessagingInstance().then(messaging => {
-    if (!messaging) return () => { };
+// export const onForegroundMessage = (callback: (payload: any) => void) => {
+//   return getMessagingInstance().then(messaging => {
+//     if (!messaging) return () => { };
 
-    return onMessage(messaging, (payload) => {
-      console.log("Message received while app is open:", payload);
-      callback(payload);
-    });
-  });
-};
+//     return onMessage(messaging, (payload) => {
+//       console.log("Message received while app is open:", payload);
+//       callback(payload);
+//     });
+//   });
+// };
 
 // Step 4: Show browser notification manually
 // export const showNotification = (payload: NotificationPayload): void => {
