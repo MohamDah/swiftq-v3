@@ -119,9 +119,9 @@ exports.handler = async function (event, context) {
 
     // Prepare the message
     const message = {
-      title: title || 'SwiftQ Notification',
-      body: body || "It's your turn!",
       data: {
+        title: title || 'SwiftQ Notification',
+        body: body || "It's your turn!",
         queueId: queueId || '',
         queueCode: queueCode || '',
         customerId: customerId || '',

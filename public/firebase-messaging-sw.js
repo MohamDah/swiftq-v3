@@ -20,9 +20,9 @@ messaging.onBackgroundMessage((payload) => {
   console.log('Received background message:', payload);
   
   // Extract notification data
-  const notificationTitle = payload.title || 'SwiftQ Notification';
+  const notificationTitle = payload.data.title || 'SwiftQ Notification';
   const notificationOptions = {
-    body: payload.body || 'You have a new notification from SwiftQ',
+    body: payload.data.body || 'You have a new notification from SwiftQ',
     icon: '/swiftqIcon.png',
     badge: '/swiftqIcon.png',
     tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
