@@ -24,7 +24,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.data.body || 'You have a new notification from SwiftQ',
     icon: '/swiftqIcon.png',
-    badge: '/swiftqIcon.png',
+    badge: '/raysGreen.png',
     tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
     data: payload.data, // Custom data we can use later
     actions: [ // These create buttons on the notification
@@ -37,6 +37,7 @@ messaging.onBackgroundMessage((payload) => {
         title: 'Dismiss'
       }
     ],
+    renotify: true,
     // requireInteraction: true // Notification stays until user acts
   };
 
