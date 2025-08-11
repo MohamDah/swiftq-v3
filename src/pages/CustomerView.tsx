@@ -293,30 +293,18 @@ export default function CustomerView() {
     }
 
     return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 mt-4">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            {/* Bell icon */}
-            <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5-5 5-5h-5m-6 10h5l-5-5 5-5H9z" />
-            </svg>
-          </div>
-          <div className="ml-3 flex-1">
-            <h3 className="text-sm font-medium text-blue-800">
-              Get Notified When It's Your Turn
-            </h3>
-            <p className="mt-1 text-sm text-blue-700">
-              Receive push notifications even when this tab isn't active, so you don't have to keep checking.
-            </p>
-          </div>
-          <div className="ml-4 flex-shrink-0">
-            <button
-              onClick={enableNotifications}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
-            >
-              Enable Notifications
-            </button>
-          </div>
+      <div className="bg-blue-50/70 border border-blue-100 rounded-lg p-3 mb-4 text-sm">
+        <div className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span className="text-blue-700">Get notified when it's your turn</span>
+          <button
+            onClick={enableNotifications}
+            className="ml-auto text-blue-600 hover:text-blue-800 font-medium text-xs px-3 py-1 border border-blue-300 rounded-full bg-white/80 hover:bg-white transition-colors"
+          >
+            Enable
+          </button>
         </div>
       </div>
     );
@@ -414,10 +402,13 @@ export default function CustomerView() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
+      
       <h1 className="text-xl font-bold mb-2 text-center">{queue.data.queueName}</h1>
       <p className="mb-6 text-center font-medium">
         Host: {queue.data.hostName}
       </p>
+
+      {renderNotificationPrompt()}
 
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         <div className={`flex justify-around flex-wrap`}>
@@ -490,7 +481,6 @@ export default function CustomerView() {
         )}
       </div>
 
-      {renderNotificationPrompt()}
     </div>
   );
 }

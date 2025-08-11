@@ -38,7 +38,8 @@ messaging.onBackgroundMessage((payload) => {
       }
     ],
     // requireInteraction: true // Notification stays until user acts
-    sound: "/notification-sound.mp3"
+    sound: "/notification-sound.mp3",
+    renotify: true
   };
 
   // Show the notification
