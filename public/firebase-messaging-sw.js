@@ -42,6 +42,8 @@ messaging.onBackgroundMessage((payload) => {
 
   // Show the notification
   self.registration.showNotification(notificationTitle, notificationOptions);
+  // prevent default
+  return true
 });
 
 // Handle when user clicks on the notification
