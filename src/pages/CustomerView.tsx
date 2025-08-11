@@ -16,11 +16,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import type { Customer, Queue, QueueItem } from '../firebase/schema';
-import { 
-  requestNotificationPermission, 
-  storeCustomerFCMToken, 
+import {
+  requestNotificationPermission,
+  storeCustomerFCMToken,
   onForegroundMessage,
-  showNotification 
+  showNotification
 } from '../firebase/messaging';
 
 // /queue/:queueId/customer/:customerId
@@ -40,7 +40,7 @@ export default function CustomerView() {
   const [exitingQueue, setExitingQueue] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermissionAsked, setNotificationPermissionAsked] = useState(false);
-  
+
   // Add ref for previous customer status
   const prevCustomerStatusRef = useRef<string | null>(null);
   // Add ref for notification sound
@@ -95,7 +95,7 @@ export default function CustomerView() {
           setLoading(false);
           return;
         }
-        
+
         // Check if customer has already exited the queue
         if (customerData.status === 'exited') {
           setError('You have already left this queue');
@@ -103,7 +103,7 @@ export default function CustomerView() {
             navigate(`/join/${queueId}`);
           }, 3000); // Redirect after 3 seconds
         }
-        
+
         setCustomer(customerData);
 
         // Get position data
@@ -131,19 +131,19 @@ export default function CustomerView() {
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as Customer;
-          
+
           // Check if status changed to 'notified'
           if (prevCustomerStatusRef.current !== 'notified' && data.status === 'notified') {
             playNotificationSound();
           } else if (data.status === 'notified' && data.lastNotifiedAt) {
             // Play notification sound again if the customer is re-notified
             // by checking if the lastNotifiedAt timestamp is different
-            if (!customer?.lastNotifiedAt || 
-                data.lastNotifiedAt.toMillis() !== customer.lastNotifiedAt?.toMillis()) {
+            if (!customer?.lastNotifiedAt ||
+              data.lastNotifiedAt.toMillis() !== customer.lastNotifiedAt?.toMillis()) {
               playNotificationSound();
             }
           }
-          
+
           // Check if status is 'removed' and redirect to home page
           if (data.status === 'removed') {
             setError('Your position has been skipped');
@@ -151,7 +151,7 @@ export default function CustomerView() {
             //   navigate('/');
             // }, 3000); // Redirect after 3 seconds
           }
-          
+
           // Update previous status ref
           prevCustomerStatusRef.current = data.status;
           setCustomer(data);
@@ -202,7 +202,7 @@ export default function CustomerView() {
       (snapshot) => {
         if (snapshot.exists()) {
           const queueData = snapshot.data() as Queue;
-          setQueue({id: queue.id, data: queueData});
+          setQueue({ id: queue.id, data: queueData });
 
           // Update estimated wait time if applicable
           if (queueData.estimatedWaitPerPerson) {
@@ -231,11 +231,11 @@ export default function CustomerView() {
   // Handle exiting the queue
   const handleExitQueue = async () => {
     if (!queueId || !customerId) return;
-    
+
     if (!confirm('Are you sure you want to exit this queue? This action cannot be undone.')) {
       return;
     }
-    
+
     setExitingQueue(true);
     try {
       await exitQueue(queue?.id || "", customerId);
@@ -285,10 +285,10 @@ export default function CustomerView() {
   // Check if we should show the notification prompt
   const renderNotificationPrompt = () => {
     // Don't show if already enabled, if permission was denied, or if customer is done
-    if (notificationsEnabled || 
-        notificationPermissionAsked || 
-        customer?.status === 'served' || 
-        customer?.status === 'removed') {
+    if (notificationsEnabled ||
+      notificationPermissionAsked ||
+      customer?.status === 'served' ||
+      customer?.status === 'removed') {
       return null;
     }
 
@@ -336,14 +336,17 @@ export default function CustomerView() {
     };
 
     checkNotificationStatus();
+  }, [customer?.notificationsEnabled]);
+
+  useEffect(() => {
 
     // Set up foreground message listener
     onForegroundMessage((payload) => {
       console.log('Foreground message received:', payload);
-      
+
       // Play your existing sound
       playNotificationSound();
-      
+
       // Show browser notification
       showNotification({
         title: payload.notification?.title || 'SwiftQ Notification',
@@ -362,13 +365,13 @@ export default function CustomerView() {
       console.error('Missing queueId or customerId');
       return;
     }
-    
+
     try {
       setNotificationPermissionAsked(true);
-      
+
       // Request permission and get token
       const token = await requestNotificationPermission();
-      
+
       if (token) {
         // Store the token with the customer record
         await storeCustomerFCMToken(queue?.id || "", customerId, token);
@@ -474,7 +477,7 @@ export default function CustomerView() {
         >
           Return to Home
         </button>
-        
+
         {/* Add Exit Queue button - only show if customer is waiting or notified */}
         {(customer.status === 'waiting' || customer.status === 'notified') && (
           <button
