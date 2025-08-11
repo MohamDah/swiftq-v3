@@ -16,7 +16,7 @@ function initializeFirebaseAdmin() {
   }
 
   initializationAttempted = true;
-  
+
   try {
     // Check if already initialized
     if (admin.apps.length > 0) {
@@ -25,7 +25,7 @@ function initializeFirebaseAdmin() {
     }
 
     let serviceAccount;
-    
+
     // Try to get service account from environment variables
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       console.log('Using service account from environment variable');
@@ -35,7 +35,7 @@ function initializeFirebaseAdmin() {
         console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT:', parseError);
         throw new Error('Invalid service account JSON in environment variable');
       }
-      
+
       // Fix the private key format if needed
       if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
         serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
@@ -67,7 +67,7 @@ function initializeFirebaseAdmin() {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
-    
+
     console.log('Firebase Admin SDK initialized successfully for project:', serviceAccount.project_id);
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
@@ -76,7 +76,7 @@ function initializeFirebaseAdmin() {
   }
 }
 
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -88,41 +88,39 @@ exports.handler = async function(event, context) {
       }
     };
   }
-  
+
   // Only accept POST requests
   if (event.httpMethod !== 'POST') {
-    return { 
-      statusCode: 405, 
+    return {
+      statusCode: 405,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'Method Not Allowed' }) 
+      body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
-  
+
   try {
     // Initialize Firebase Admin
     initializeFirebaseAdmin();
-    
+
     // Parse the request body
     const data = JSON.parse(event.body);
     const { token, title, body, queueId, customerId, queueCode } = data;
-    
+
     console.log('Processing notification request:', { title, queueId, customerId, queueCode });
-    
+
     // Validate required fields
     if (!token) {
-      return { 
-        statusCode: 400, 
+      return {
+        statusCode: 400,
         headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: 'FCM token is required' }) 
+        body: JSON.stringify({ error: 'FCM token is required' })
       };
     }
-    
+
     // Prepare the message
     const message = {
-      notification: {
-        title: title || 'SwiftQ Notification',
-        body: body || "It's your turn!",
-      },
+      title: title || 'SwiftQ Notification',
+      body: body || "It's your turn!",
       data: {
         queueId: queueId || '',
         queueCode: queueCode || '',
@@ -132,30 +130,30 @@ exports.handler = async function(event, context) {
       },
       token: token
     };
-    
+
     // Send the notification
     console.log('Sending FCM message with token:', token.substring(0, 10) + '...');
     const response = await admin.messaging().send(message);
     console.log('FCM message sent successfully:', response);
-    
+
     // Return success response
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ 
-        success: true, 
-        messageId: response 
+      body: JSON.stringify({
+        success: true,
+        messageId: response
       })
     };
   } catch (error) {
     console.error('Error in notification function:', error);
-    
+
     // Return error response
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ 
-        success: false, 
+      body: JSON.stringify({
+        success: false,
         error: error.message,
         errorCode: error.code || 'unknown',
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
