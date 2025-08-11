@@ -37,8 +37,8 @@ messaging.onBackgroundMessage((payload) => {
         title: 'Dismiss'
       }
     ],
-    renotify: true,
     // requireInteraction: true // Notification stays until user acts
+    sound: "/notification-sound.mp3"
   };
 
   // Show the notification
