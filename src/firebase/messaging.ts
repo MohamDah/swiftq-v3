@@ -177,24 +177,24 @@ export const onForegroundMessage = (callback: (payload: any) => void) => {
 };
 
 // Step 4: Show browser notification manually
-export const showNotification = (payload: NotificationPayload): void => {
-  if ("Notification" in window && Notification.permission === "granted") {
-    const notification = new Notification(payload.title, {
-      body: payload.body,
-      icon: payload.icon || "/swiftqIcon.png",
-      badge: payload.badge || "/swiftqIcon.png",
-      tag: payload.tag || "swiftq-notification",
-      data: payload.data,
-      requireInteraction: true
-    });
+// export const showNotification = (payload: NotificationPayload): void => {
+//   if ("Notification" in window && Notification.permission === "granted") {
+//     const notification = new Notification(payload.title, {
+//       body: payload.body,
+//       icon: payload.icon || "/swiftqIcon.png",
+//       badge: payload.badge || "/swiftqIcon.png",
+//       tag: payload.tag || "swiftq-notification",
+//       data: payload.data,
+//       requireInteraction: true
+//     });
 
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
+//     notification.onclick = () => {
+//       window.focus();
+//       notification.close();
 
-      if (payload.data?.queueId && payload.data?.customerId) {
-        window.location.href = `/queue/${payload.data.queueId}/customer/${payload.data.customerId}`;
-      }
-    };
-  }
-};
+//       if (payload.data?.queueId && payload.data?.customerId) {
+//         window.location.href = `/queue/${payload.data.queueId}/customer/${payload.data.customerId}`;
+//       }
+//     };
+//   }
+// };

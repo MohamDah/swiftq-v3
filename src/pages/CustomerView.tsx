@@ -20,7 +20,7 @@ import {
   requestNotificationPermission,
   storeCustomerFCMToken,
   onForegroundMessage,
-  showNotification
+  // showNotification
 } from '../firebase/messaging';
 
 // /queue/:queueId/customer/:customerId
@@ -348,14 +348,14 @@ export default function CustomerView() {
       playNotificationSound();
 
       // Show browser notification
-      showNotification({
-        title: payload.notification?.title || 'SwiftQ Notification',
-        body: payload.notification?.body || "It's your turn!",
-        data: {
-          queueId: payload.data?.queueId,
-          customerId: payload.data?.customerId
-        }
-      });
+      // showNotification({
+      //   title: payload.notification?.title || 'SwiftQ Notification',
+      //   body: payload.notification?.body || "It's your turn!",
+      //   data: {
+      //     queueId: payload.data?.queueId,
+      //     customerId: payload.data?.customerId
+      //   }
+      // });
     }).catch(console.error);
   }, []);
 
