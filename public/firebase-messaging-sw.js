@@ -16,33 +16,33 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 // This function runs when a notification arrives and the app is closed/hidden
-messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message:', payload);
+// messaging.onBackgroundMessage((payload) => {
+//   console.log('Received background message:', payload);
   
-  // Extract notification data
-  const notificationTitle = payload.notification?.title || 'SwiftQ Notification';
-  const notificationOptions = {
-    body: payload.notification?.body || 'You have a new notification from SwiftQ',
-    icon: '/swiftqIcon.png',
-    badge: '/swiftqIcon.png',
-    tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
-    data: payload.data, // Custom data we can use later
-    actions: [ // These create buttons on the notification
-      {
-        action: 'view',
-        title: 'View Queue'
-      },
-      {
-        action: 'dismiss', 
-        title: 'Dismiss'
-      }
-    ],
-    // requireInteraction: true // Notification stays until user acts
-  };
+//   // Extract notification data
+//   const notificationTitle = payload.notification?.title || 'SwiftQ Notification';
+//   const notificationOptions = {
+//     body: payload.notification?.body || 'You have a new notification from SwiftQ',
+//     icon: '/swiftqIcon.png',
+//     badge: '/swiftqIcon.png',
+//     tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
+//     data: payload.data, // Custom data we can use later
+//     actions: [ // These create buttons on the notification
+//       {
+//         action: 'view',
+//         title: 'View Queue'
+//       },
+//       {
+//         action: 'dismiss', 
+//         title: 'Dismiss'
+//       }
+//     ],
+//     // requireInteraction: true // Notification stays until user acts
+//   };
 
-  // Show the notification
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   // Show the notification
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
 // Handle when user clicks on the notification
 self.addEventListener('notificationclick', (event) => {
