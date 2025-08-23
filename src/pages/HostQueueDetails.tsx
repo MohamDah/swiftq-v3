@@ -5,7 +5,7 @@ import { db } from '../firebase/config';
 import type { Queue, Customer } from '../firebase/schema';
 import { formatDistance } from 'date-fns';
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
-import { removeCustomer, sendCustomerNotification } from '../firebase/services/queues'; // Import the new function
+import { removeCustomer, sendCustomerNotification, deleteQueue } from '../firebase/services/queues'; // Import the deleteQueue function
 
 type QueueCustomer = {
   id: string;
@@ -204,6 +204,23 @@ export default function HostQueueDetails() {
     }
   };
 
+  // Add a function to handle queue deletion
+  const handleDeleteQueue = async () => {
+    if (!queueId) return;
+
+    if (window.confirm('Are you sure you want to delete this queue? This action cannot be undone.')) {
+      try {
+        setIsLoading(true);
+        await deleteQueue(queueId);
+        navigate('/my-queues', { replace: true });
+      } catch (err) {
+        console.error("Error deleting queue:", err);
+        setError("Failed to delete queue.");
+        setIsLoading(false);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
@@ -236,8 +253,8 @@ export default function HostQueueDetails() {
         {/* Queue status and actions */}
         <div className="bg-white rounded-2xl overflow-hidden mb-6 shadow-md shadow-black/25">
           <div className="m-4 p-4 bg-primary/60 rounded-2xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between">
-              <div>
+            <div className="flex flex-col md:flex-row gap-2 flex-wrap md:items-center justify-between">
+              <div className='min-w-fit'>
                 <div className="flex items-center">
                   <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium border-2 ${isQueueActive ? 'bg-green-200 text-green-800 border-green-500' : 'bg-red-200 text-red-800 border-red-500'
                     }`}>
@@ -275,6 +292,12 @@ export default function HostQueueDetails() {
                 >
                   View QR Code
                 </Link>
+                <button
+                  onClick={handleDeleteQueue}
+                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Delete Queue
+                </button>
               </div>
             </div>
           </div>

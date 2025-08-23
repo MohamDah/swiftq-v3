@@ -3,6 +3,7 @@ import { Link, useLoaderData } from 'react-router-dom';
 import type { QueueItem } from '../../firebase/schema';
 import { db } from '../../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
+import { deleteQueue } from '../../firebase/services/queues'; // Import deleteQueue function
 
 // Defines the structure of data received from the route loader
 type LoaderData = {
@@ -15,7 +16,7 @@ export default function HostQueues() {
   const [queues, setQueues] = useState(loaderData.queues);
   // Tracks which queue is currently being activated/deactivated
   const [activeInProgress, setActiveInProgress] = useState<string | null>(null);
-
+  const [deleteInProgress, setDeleteInProgress] = useState<string | null>(null);
 
   // Handles activating or deactivating a queue
   const toggleQueueStatus = async (queue: QueueItem & {
@@ -43,6 +44,24 @@ export default function HostQueues() {
 
     setActiveInProgress(null);
   };
+
+  // Handle deleting a queue
+  const handleDeleteQueue = async (queueId: string) => {
+    if (window.confirm('Are you sure you want to delete this queue? This action cannot be undone.')) {
+      try {
+        setDeleteInProgress(queueId);
+        await deleteQueue(queueId);
+        // Update local state to remove the deleted queue
+        setQueues(prev => prev.filter(q => q.id !== queueId));
+      } catch (err) {
+        console.error("Error deleting queue:", err);
+        alert("Failed to delete queue.");
+      } finally {
+        setDeleteInProgress(null);
+      }
+    }
+  };
+
   return (
     <div className="py-8">
       <div className="flex flex-col justify-between items-center mb-6">
@@ -103,6 +122,13 @@ export default function HostQueues() {
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
                         >
                           {activeInProgress === queue.id ? "Toggling" : queue.data.isActive ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          disabled={deleteInProgress === queue.id}
+                          onClick={() => handleDeleteQueue(queue.id)}
+                          className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
+                        >
+                          {deleteInProgress === queue.id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </div>
