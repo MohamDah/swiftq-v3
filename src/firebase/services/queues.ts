@@ -480,3 +480,21 @@ export const sendCustomerNotification = async (
     throw error;
   }
 };
+
+// Function to get the count of waiting customers in a queue
+export const getQueueCustomerCount = async (queueId: string): Promise<number> => {
+  try {
+    const customersRef = collection(db, "queues", queueId, "customers");
+    const customersQuery = query(
+      customersRef,
+      where("status", "in", ["waiting", "notified"])
+    );
+
+    const customersSnapshot = await getDocs(customersQuery);
+    console.log(customersSnapshot.docs)
+    return customersSnapshot.size;
+  } catch (error) {
+    console.error("Error fetching queue customer count:", error);
+    throw error;
+  }
+};
