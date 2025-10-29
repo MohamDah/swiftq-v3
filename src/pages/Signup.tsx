@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { updateProfile } from 'firebase/auth';
-import { registerWithEmail } from '../firebase/auth';
 import logoFull from "../assets/logoFull.png";
+import { useSignupMutation } from '@/queries/mutations/useSignupMutation';
 
 // Signup component handles user authentication through email and password
 export default function Signup() {
+  const { mutateAsync: signup, error: apiError, isPending } = useSignupMutation()
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -64,39 +64,16 @@ export default function Signup() {
       return;
     }
 
-    setLoading(true);
 
-    try {
-      // Create user with email and password
-      const user = await registerWithEmail(
-        email,
-        password
-      );
+    // Create user with email and password
+    await signup({
+      email,
+      password,
+      displayName: name
+    });
 
-      // Update user profile with name
-      await updateProfile(user, {
-        displayName: name
-      });
-
-      // Navigate to home page after successful signup
-      navigate('/my-queues');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error('Signup error:', err);
-
-      // Handle specific Firebase Auth errors
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please log in instead.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email address format.');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. Please choose a stronger password.');
-      } else {
-        setError('Failed to create an account. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to home page after successful signup
+    navigate('/my-queues');
   };
 
   return (
@@ -115,7 +92,7 @@ export default function Signup() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 sm:px-10 border-8 border-primary rounded-3xl shadow-md shadow-black/25">
-          {error && (
+          {error || apiError && (
             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -124,7 +101,8 @@ export default function Signup() {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
+                  {error && <p className="text-sm text-red-700">{error}</p>}
+                  {apiError && <p className="text-sm text-red-700">{apiError.response?.data?.message}</p>}
                 </div>
               </div>
             </div>
@@ -213,11 +191,11 @@ export default function Signup() {
             <div>
               <button
                 type="submit"
-                disabled={loading}
-                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-md shadow-black/25 text-base font-semibold bg-primary hover:bg-primary-sat ${loading ? "opacity-70 cursor-not-allowed" : ""
+                disabled={isPending}
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-md shadow-black/25 text-base font-semibold bg-primary hover:bg-primary-sat ${isPending ? "opacity-70 cursor-not-allowed" : ""
                   }`}
               >
-                {loading ? "Creating account..." : "Sign up"}
+                {isPending ? "Creating account..." : "Sign up"}
               </button>
             </div>
           </form>

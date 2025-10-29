@@ -1,14 +1,16 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { logout } from '../firebase/auth';
-import { useAuth } from '../context/AuthContext';
 import logoFull from "../assets/logoFull.png";
 import { MenuIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import JoinPopup from '../pages/_components/JoinPopup';
+import { useCurrentUser } from '@/queries/useCurrentUser';
+import { useLogoutMutation } from '@/queries/mutations/useLogoutMutation';
 
 
 export default function Layout() {
-  const { currentUser } = useAuth();
+  const {data: currentUser, isLoading, isError} = useCurrentUser();
+  const {mutate: logout} = useLogoutMutation()
+
   const [showModal, setShowModal] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const pathname = useLocation().pathname;
@@ -30,7 +32,7 @@ export default function Layout() {
 
         {!showBurger
           ? null
-          : currentUser
+          : isLoading ? null : !isError
             ? <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25'>
               <MenuIcon />
             </button>
