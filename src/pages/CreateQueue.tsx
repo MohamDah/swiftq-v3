@@ -1,6 +1,6 @@
+import { useCreateQueueMutation } from '@/queries/mutations/useCreateQueueMutation';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createQueue } from '../firebase/services/queues';
 
 // CreateQueue component - allows hosts to create new queues
 // Route: /create
@@ -11,6 +11,7 @@ export default function CreateQueue() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const {mutateAsync: createQueue} = useCreateQueueMutation()
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,10 +29,10 @@ export default function CreateQueue() {
 
     try {
       // Create the queue in Firestore, passing the requireNames parameter
-      const queueId = await createQueue(queueName, requireNames);
+      const queueId = await createQueue({queueName, requireCustomerName: requireNames});
 
       // Redirect to the queue details page
-      navigate(`/my-queues/${queueId}`);
+      navigate(`/my-queues/${queueId.queueCode}`);
     } catch (err) {
       console.error('Error creating queue:', err);
       setError('Failed to create queue. Please try again.');

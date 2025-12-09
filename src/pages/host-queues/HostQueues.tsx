@@ -1,66 +1,59 @@
 import { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
-import type { QueueItem } from '../../firebase/schema';
-import { db } from '../../firebase/config';
-import { doc, updateDoc } from 'firebase/firestore';
-import { deleteQueue } from '../../firebase/services/queues'; // Import deleteQueue function
-
-// Defines the structure of data received from the route loader
-type LoaderData = {
-  queues: (QueueItem & { count: number; })[];
-};
+import { QueueItem } from '@/types/api';
+import { useHostQueuesQuery } from '@/queries/useHostQueuesQuery';
 
 // Main component for displaying the user's created queues
 export default function HostQueues() {
-  const loaderData = useLoaderData() as LoaderData;
-  const [queues, setQueues] = useState(loaderData.queues);
+  const {data: queues, isLoading, error} = useHostQueuesQuery()
+  // const [queues, setQueues] = useState<QueueItem[]>([]);
   // Tracks which queue is currently being activated/deactivated
   const [activeInProgress, setActiveInProgress] = useState<string | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState<string | null>(null);
 
   // Handles activating or deactivating a queue
-  const toggleQueueStatus = async (queue: QueueItem & {
-    count: number;
-  }) => {
-    if (!queue.id || !queue) return;
-    setActiveInProgress(queue.id);
-    try {
-      // Update queue status in Firestore
-      await updateDoc(doc(db, "queues", queue.id), {
-        isActive: !queue.data.isActive
-      });
-      // Update local state to reflect changes
-      setQueues(prev => prev.map(q => {
-        const newQ = { ...q };
-        if (q.id === queue.id) {
-          newQ.data = { ...newQ.data, isActive: !newQ.data.isActive };
-        }
-        return newQ;
-      }));
-    } catch (err) {
-      console.error("Error updating queue status:", err);
-      alert("Failed to update queue status.");
-    }
+  // const toggleQueueStatus = async (queue: QueueItem & {
+  //   count: number;
+  // }) => {
+  //   if (!queue._id || !queue) return;
+  //   setActiveInProgress(queue._id);
+  //   try {
+  //     // Update queue status in Firestore
+  //     await updateDoc(doc(db, "queues", queue._id), {
+  //       isActive: !queue.isActive
+  //     });
+  //     // Update local state to reflect changes
+  //     setQueues(prev => prev.map(q => {
+  //       const newQ = { ...q };
+  //       if (q._id === queue._id) {
+  //         newQ = { ...newQ, isActive: !newQ.isActive };
+  //       }
+  //       return newQ;
+  //     }));
+  //   } catch (err) {
+  //     console.error("Error updating queue status:", err);
+  //     alert("Failed to update queue status.");
+  //   }
 
-    setActiveInProgress(null);
-  };
+  //   setActiveInProgress(null);
+  // };
 
   // Handle deleting a queue
-  const handleDeleteQueue = async (queueId: string) => {
-    if (window.confirm('Are you sure you want to delete this queue? This action cannot be undone.')) {
-      try {
-        setDeleteInProgress(queueId);
-        await deleteQueue(queueId);
-        // Update local state to remove the deleted queue
-        setQueues(prev => prev.filter(q => q.id !== queueId));
-      } catch (err) {
-        console.error("Error deleting queue:", err);
-        alert("Failed to delete queue.");
-      } finally {
-        setDeleteInProgress(null);
-      }
-    }
-  };
+  // const handleDeleteQueue = async (queueId: string) => {
+  //   if (window.confirm('Are you sure you want to delete this queue? This action cannot be undone.')) {
+  //     try {
+  //       setDeleteInProgress(queueId);
+  //       await deleteQueue(queueId);
+  //       // Update local state to remove the deleted queue
+  //       setQueues(prev => prev.filter(q => q._id !== queueId));
+  //     } catch (err) {
+  //       console.error("Error deleting queue:", err);
+  //       alert("Failed to delete queue.");
+  //     } finally {
+  //       setDeleteInProgress(null);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="py-8">
@@ -68,7 +61,7 @@ export default function HostQueues() {
         <h1 className="text-2xl font-bold py-5 bg-primary w-full text-center">My Queues</h1>
       </div>
       <div className="mx-auto mt-11 py-12 px-5 bg-primary">
-        {queues.length === 0 ? (
+        {queues?.length === 0 ? (
           <div className="containe max-w-5xl mx-auto text-center py-10 bg-white rounded-lg shadow-lg shadow-black/25 border border-gray-200">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -87,48 +80,48 @@ export default function HostQueues() {
         ) : (
           <div className="container max-w-5xl mx-auto py-8 bg-white shadow-lg shadow-black/25 overflow-hidden rounded-[40px]">
             <ul className="space-y-6 px-4">
-              {queues.map((queue) => (
-                <li key={queue.id}>
+              {queues?.map((queue) => (
+                <li key={queue._id}>
                   <div className="px-4 py-4 sm:px-6 bg-primary/50 rounded-3xl shadow-md shadow-black/25">
                     <div className="flex items-center justify-between flex-wrap gap-y-2">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-white rounded-full flex items-center justify-center">
-                          <span className="font-semibold">{queue.count}</span>
+                          <span className="font-semibold">{queue.customerCount}</span>
                         </div>
                         <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900 break-words">{queue.data.queueName}</h3>
+                          <h3 className="text-lg font-medium text-gray-900 break-words">{queue.queueName}</h3>
                           <p className="text-sm text-gray-500">
-                            Created {queue.data.createdAt.toDate().toLocaleDateString()} •
-                            {queue.data.requireCustomerName ? " Names required" : " Names not required"}
+                            Created {new Date(queue.createdAt).toLocaleDateString()} •
+                            {queue.requireCustomerName ? " Names required" : " Names not required"}
                           </p>
                         </div>
                       </div>
                       <div className="flex gap-x-2 gap-y-2 justify-end flex-wrap">
                         <Link
-                          to={`/my-queues/${queue.id}`}
+                          to={`/my-queues/${queue._id}`}
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-blue-500 bg-blue-300 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           Manage
                         </Link>
                         <Link
-                          to={`/join/${queue.data.id}`}
+                          to={`/join/${queue._id}`}
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-green-500 bg-green-300 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                           Join Link
                         </Link>
                         <button
-                          disabled={activeInProgress === queue.id}
-                          onClick={() => toggleQueueStatus(queue)}
+                          disabled={activeInProgress === queue._id}
+                          // onClick={() => toggleQueueStatus(queue)}
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
                         >
-                          {activeInProgress === queue.id ? "Toggling" : queue.data.isActive ? "Deactivate" : "Activate"}
+                          {activeInProgress === queue._id ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
                         </button>
                         <button
-                          disabled={deleteInProgress === queue.id}
-                          onClick={() => handleDeleteQueue(queue.id)}
+                          disabled={deleteInProgress === queue._id}
+                          // onClick={() => handleDeleteQueue(queue._id)}
                           className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
                         >
-                          {deleteInProgress === queue.id ? "Deleting..." : "Delete"}
+                          {deleteInProgress === queue._id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </div>

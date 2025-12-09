@@ -4,8 +4,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./components/ErrorPage";
 import Layout from "./components/Layout";
 // import { HostQueueLoader } from "./pages/host-queues/loader";
-// import CustomerLayout from "./components/CustomerLayout";
-// import CreateQueue from "./pages/CreateQueue";
+import CustomerLayout from "./components/CustomerLayout";
+import CreateQueue from "./pages/CreateQueue";
 // import HostQueues from "./pages/host-queues/HostQueues";
 import Home from "./pages/Home";
 // import JoinQueue from "./pages/join-queue/JoinQueue";
@@ -17,6 +17,8 @@ import Signup from "./pages/Signup";
 // import Analytics from "./pages/Analytics";
 // import QR from "./pages/QR";
 import { QueryProvider } from "./providers/QueryProvider";
+import ProtectedRoute from "./components/ProtectedRoute";
+import HostQueues from "./pages/host-queues/HostQueues";
 
 
 const router = createBrowserRouter([
@@ -29,9 +31,9 @@ const router = createBrowserRouter([
         element: <Home />
       },
   //     // Host Views
-  //     {
-  //       element: <CustomerLayout />,
-  //       children: [
+      {
+        element: <CustomerLayout />,
+        children: [
   //         {
   //           path: "/queue/:queueId/customer/:customerId",
   //           element: (
@@ -45,26 +47,24 @@ const router = createBrowserRouter([
   //           ),
   //           loader: JoinQueueLoader
   //         },
-  //         {
-  //           path: "/create",
-  //           element: (
-  //             <ProtectedRoute>
-  //               <CreateQueue />
-  //             </ProtectedRoute>
-  //           )
-  //         }
-  //       ]
-
-  //     },
-  //     {
-  //       path: "/my-queues",
-  //       element: (
-  //         <ProtectedRoute>
-  //           <HostQueues />
-  //         </ProtectedRoute>
-  //       ),
-  //       loader: HostQueueLoader
-  //     },
+          {
+            path: "/create",
+            element: (
+              <ProtectedRoute>
+                <CreateQueue />
+              </ProtectedRoute>
+            )
+          }
+        ]
+      },
+      {
+        path: "/my-queues",
+        element: (
+          <ProtectedRoute>
+            <HostQueues />
+          </ProtectedRoute>
+        ),
+      },
   //     {
   //       path: "/my-queues/:queueId",
   //       element: (
