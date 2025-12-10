@@ -1,78 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logoFull from "../assets/logoFull.png";
 import { useSignupMutation } from '@/queries/mutations/useSignupMutation';
+import { useForm } from 'react-hook-form';
+import { SignupProps } from '@/types/auth';
 
 // Signup component handles user authentication through email and password
 export default function Signup() {
   const { mutateAsync: signup, error: apiError, isPending } = useSignupMutation()
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const { register, handleSubmit, formState: { errors }, getValues } = useForm<SignupProps & { confirmPassword: string }>({
+    defaultValues: {
+      businessName: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+  })
+
   const navigate = useNavigate();
 
-  const validateForm = () => {
-    // Reset error state
-    setError(null);
-
-    // Check for empty fields
-    if (!name.trim()) {
-      setError('Please enter your name');
-      return false;
-    }
-
-    if (!email.trim()) {
-      setError('Please enter your email');
-      return false;
-    }
-
-    if (!password) {
-      setError('Please enter a password');
-      return false;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    // Check password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return false;
-    }
-
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form fields
-    if (!validateForm()) {
-      return;
-    }
-
-
-    // Create user with email and password
-    await signup({
-      email,
-      password,
-      displayName: name
-    });
-
-    // Navigate to home page after successful signup
+  const onSubmit = async ({ businessName, email, password }: SignupProps) => {
+    await signup({ email, password, businessName });
     navigate('/my-queues');
   };
 
@@ -92,7 +41,7 @@ export default function Signup() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 sm:px-10 border-8 border-primary rounded-3xl shadow-md shadow-black/25">
-          {error || apiError && (
+          {apiError && (
             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -101,31 +50,28 @@ export default function Signup() {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  {error && <p className="text-sm text-red-700">{error}</p>}
                   {apiError && <p className="text-sm text-red-700">{apiError.response?.data?.message}</p>}
                 </div>
               </div>
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label htmlFor="name" className="block text-base font-semibold">
-                Full Name
+              <label htmlFor="businessName" className="block text-base font-semibold">
+                Business Name
               </label>
               <div className="mt-1">
                 <input
-                  id="name"
-                  name="name"
+                  id="businessName"
                   type="text"
                   autoComplete="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  {...register('businessName', { required: 'Please enter your name' })}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                   placeholder="John Doe"
                 />
               </div>
+              {errors.businessName && <p className="mt-1 text-xs text-red-700">{errors.businessName.message}</p>}
             </div>
 
             <div>
@@ -135,16 +81,20 @@ export default function Signup() {
               <div className="mt-1">
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'Please enter your email',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Please enter a valid email address'
+                    }
+                  })}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                   placeholder="you@example.com"
                 />
               </div>
+              {errors.email && <p className="mt-1 text-xs text-red-700">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -154,19 +104,17 @@ export default function Signup() {
               <div className="mt-1">
                 <input
                   id="password"
-                  name="password"
                   type="password"
                   autoComplete="new-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register('password', {
+                    required: 'Please enter a password',
+                    minLength: { value: 6, message: 'Password must be at least 6 characters long' }
+                  })}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                   placeholder="••••••••"
                 />
               </div>
-              <p className="mt-1 text-xs">
-                Password must be at least 6 characters long
-              </p>
+              {errors.password && <p className="text-xs text-red-700">{errors.password.message}</p>}
             </div>
 
             <div>
@@ -176,16 +124,17 @@ export default function Signup() {
               <div className="mt-1">
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type="password"
                   autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: (value) => value === getValues('password') || 'Passwords do not match'
+                  })}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                   placeholder="••••••••"
                 />
               </div>
+              {errors.confirmPassword && <p className="mt-1 text-xs text-red-700">{errors.confirmPassword.message}</p>}
             </div>
 
             <div>

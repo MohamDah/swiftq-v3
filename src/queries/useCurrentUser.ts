@@ -7,7 +7,7 @@ export function useCurrentUser() {
   return useQuery<UserDto, ApiError>({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<UserDto>('/auth/me')
+      const { data } = await axiosInstance.get<UserDto>('/auth')
       return data
     },
   })
