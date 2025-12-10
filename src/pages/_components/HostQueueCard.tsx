@@ -1,10 +1,20 @@
+import ConfirmationModal from '@/components/modals/Confirmation'
+import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue'
 import { QueueItem } from '@/types/api'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-export default function HostQueueCard({queue}: {queue: QueueItem}) {
+export default function HostQueueCard({ queue }: { queue: QueueItem }) {
+  const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const activeInProgress = "false"
-  const deleteInProgress = "false"
+
+  const handleDelete = async () => {
+    await deleteQueue({ id: queue.id })
+    setConfirmDelete(false)
+  }
+
   return (
     <li>
       <div className="px-4 py-4 sm:px-6 bg-primary/50 rounded-3xl shadow-md shadow-black/25">
@@ -36,21 +46,30 @@ export default function HostQueueCard({queue}: {queue: QueueItem}) {
             </Link>
             <button
               disabled={activeInProgress === queue.id}
-              // onClick={() => toggleQueueStatus(queue)}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
             >
               {activeInProgress === queue.id ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
             </button>
             <button
-              disabled={deleteInProgress === queue.id}
-              // onClick={() => handleDeleteQueue(queue.id)}
+              disabled={isDeleting}
+              onClick={() => setConfirmDelete(true)}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
             >
-              {deleteInProgress === queue.id ? "Deleting..." : "Delete"}
+              {isDeleting? "Deleting..." : "Delete"}
             </button>
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        variant='danger'
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleDelete}
+        confirmText='Delete'
+        title='Delete Queue'
+        message={`Are you sure you want to delete "${queue.name}"? This action is unreversible!`}
+        isLoading={isDeleting}
+      />
     </li>
   )
 }
