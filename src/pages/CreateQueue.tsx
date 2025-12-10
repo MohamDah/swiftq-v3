@@ -16,7 +16,7 @@ export default function CreateQueue() {
   const onSubmit = async ({ name, requireNames }: CreateQueueProps) => {
     const queueId = await createQueue({ name, requireNames });
 
-    navigate(`/my-queues/${queueId.queueCode}`);
+    navigate(`/my-queues/${queueId.id}`);
 
   };
 

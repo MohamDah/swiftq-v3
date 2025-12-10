@@ -1,0 +1,56 @@
+import { QueueItem } from '@/types/api'
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+export default function HostQueueCard({queue}: {queue: QueueItem}) {
+  const activeInProgress = "false"
+  const deleteInProgress = "false"
+  return (
+    <li>
+      <div className="px-4 py-4 sm:px-6 bg-primary/50 rounded-3xl shadow-md shadow-black/25">
+        <div className="flex items-center justify-between flex-wrap gap-y-2">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10 bg-white rounded-full flex items-center justify-center">
+              <span className="font-semibold">{queue._count?.entries}</span>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-medium text-gray-900 break-words">{queue.name}</h3>
+              <p className="text-sm text-gray-500">
+                Created {new Date(queue.createdAt).toLocaleDateString()} •
+                {queue.requireNames ? " Names required" : " Names not required"}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-x-2 gap-y-2 justify-end flex-wrap">
+            <Link
+              to={`/my-queues/${queue.id}`}
+              className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-blue-500 bg-blue-300 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Manage
+            </Link>
+            <Link
+              to={`/join/${queue.id}`}
+              className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-green-500 bg-green-300 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Join Link
+            </Link>
+            <button
+              disabled={activeInProgress === queue.id}
+              // onClick={() => toggleQueueStatus(queue)}
+              className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
+            >
+              {activeInProgress === queue.id ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
+            </button>
+            <button
+              disabled={deleteInProgress === queue.id}
+              // onClick={() => handleDeleteQueue(queue.id)}
+              className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
+            >
+              {deleteInProgress === queue.id ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </li>
+  )
+}

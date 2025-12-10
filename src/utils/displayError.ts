@@ -5,13 +5,7 @@ export function displayError(error: Error) {
     const message = error.response?.data.message
 
     if (Array.isArray(message)) {
-      return (
-        <ul className="text-xs space-y-0.5">
-          {message.map((i: string) => (
-            <li>{i}</li>
-          ))}
-        </ul>
-      )
+      return message.join(', ')
     } else
       return message
   }

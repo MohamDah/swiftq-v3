@@ -5,16 +5,18 @@ export interface UserDto {
 }
 
 export interface QueueItem {
-  _id: string;
-  queueCode: string;
-  hostId: string;
-  hostName: string;
-  queueName: string;
+  id: string;
+  qrCode: string;
+  name: string;
+  description: null;
   isActive: boolean;
-  requireCustomerName: boolean;
-  estimatedWaitPerPerson: number | null;
-  waitTimes: number[];
-  createdAt: Date;
-  updatedAt?: Date;
-  customerCount: number;
+  maxSize: null;
+  averageServiceTime: number;
+  requireNames: boolean;
+  createdAt: string;
+  updatedAt: string;
+  hostId: string;
+  _count?: {
+    entries: number
+  }
 }

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { QueueItem, UserDto } from '@/types/api'
+import { QueueItem } from '@/types/api'
 import axiosInstance from '@/api/axiosInstance'
 import { ApiError } from '@/types/ApiError'
 
