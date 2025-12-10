@@ -1,18 +1,26 @@
 import ConfirmationModal from '@/components/modals/Confirmation'
 import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue'
+import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue'
 import { QueueItem } from '@/types/api'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function HostQueueCard({ queue }: { queue: QueueItem }) {
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
+  const {mutateAsync: updateQueue, isPending: isUpdating} = useUpdateQueueMutation()
 
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const activeInProgress = "false"
 
   const handleDelete = async () => {
     await deleteQueue({ id: queue.id })
     setConfirmDelete(false)
+  }
+
+  const handleToggleActive = async () => {
+    await updateQueue({
+      queueId: queue.id,
+      isActive: !queue.isActive
+    })
   }
 
   return (
@@ -39,16 +47,17 @@ export default function HostQueueCard({ queue }: { queue: QueueItem }) {
               Manage
             </Link>
             <Link
-              to={`/join/${queue.id}`}
+              to={`/join/${queue.qrCode}`}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-green-500 bg-green-300 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               Join Link
             </Link>
             <button
-              disabled={activeInProgress === queue.id}
+              disabled={isUpdating}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
+              onClick={handleToggleActive}
             >
-              {activeInProgress === queue.id ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
+              {isUpdating ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
             </button>
             <button
               disabled={isDeleting}
