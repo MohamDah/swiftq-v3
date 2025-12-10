@@ -1,44 +1,23 @@
-import { useCreateQueueMutation } from '@/queries/mutations/useCreateQueueMutation';
-import React, { useState } from 'react';
+import { CreateQueueProps, useCreateQueueMutation } from '@/queries/mutations/useCreateQueueMutation';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { displayError } from '@/utils/displayError';
 
 // CreateQueue component - allows hosts to create new queues
 // Route: /create
 export default function CreateQueue() {
-  // Form state for queue creation
-  const [queueName, setQueueName] = useState('');
-  const [requireNames, setRequireNames] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const {mutateAsync: createQueue} = useCreateQueueMutation()
+  const { mutateAsync: createQueue, error } = useCreateQueueMutation()
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<CreateQueueProps>({
+    defaultValues: { name: '', requireNames: false }
+  })
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async ({ name, requireNames }: CreateQueueProps) => {
+    const queueId = await createQueue({ name, requireNames });
 
-    // Validate queue name
-    if (!queueName.trim()) {
-      setError('Queue name is required');
-      return;
-    }
+    navigate(`/my-queues/${queueId.queueCode}`);
 
-    // Start loading state
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Create the queue in Firestore, passing the requireNames parameter
-      const queueId = await createQueue({queueName, requireCustomerName: requireNames});
-
-      // Redirect to the queue details page
-      navigate(`/my-queues/${queueId.queueCode}`);
-    } catch (err) {
-      console.error('Error creating queue:', err);
-      setError('Failed to create queue. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -55,37 +34,33 @@ export default function CreateQueue() {
 
           {error && (
             <div className="mb-2 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-              {error}
+              {displayError(error)}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
-              <label htmlFor="queueName" className="block text-sm font-semibold">
+              <label htmlFor="name" className="block text-sm font-semibold">
                 Queue Name <span className="text-red-500">*</span>
               </label>
               <div className="mt-1">
                 <input
-                  id="queueName"
-                  name="queueName"
+                  id="name"
                   type="text"
-                  required
-                  value={queueName}
-                  onChange={(e) => setQueueName(e.target.value)}
+                  {...register('name', { required: 'Queue name is required' })}
                   className="appearance-none block w-full px-3 py-2 border-2 border-primary rounded-md shadow-sm placeholder-gray-500 focus:outline-none text-sm"
                   placeholder="e.g., Coffee Shop Queue"
                 />
               </div>
+              {errors.name && <p className="mt-1 text-sm text-red-700">{errors.name.message}</p>}
             </div>
 
             <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
                   id="requireNames"
-                  name="requireNames"
                   type="checkbox"
-                  checked={requireNames}
-                  onChange={(e) => setRequireNames(e.target.checked)}
+                  {...register('requireNames')}
                   className="h-4 w-4"
                 />
               </div>
@@ -107,11 +82,11 @@ export default function CreateQueue() {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
-                className={`flex-1 py-1 px-4 border border-transparent rounded-xl shadow-lg shadow-black/25 text-sm font-semibold bg-primary hover:bg-primary-sat  ${isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                disabled={isSubmitting}
+                className={`flex-1 py-1 px-4 border border-transparent rounded-xl shadow-lg shadow-black/25 text-sm font-semibold bg-primary hover:bg-primary-sat  ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
                   }`}
               >
-                {isLoading ? 'Creating...' : 'Create Queue'}
+                {isSubmitting ? 'Creating...' : 'Create Queue'}
               </button>
             </div>
           </form>

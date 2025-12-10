@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ApiError } from '@/types/ApiError'
 import axiosInstance from '@/api/axiosInstance'
 import { QueueItem } from '@/types/api'
 
-interface CreateQueueProps {
-  queueName: string
-  requireCustomerName?: boolean
+export interface CreateQueueProps {
+  name: string
+  requireNames?: boolean
 }
 async function createQueue(body: CreateQueueProps) {
   const { data } = await axiosInstance.post("/queues", body)
@@ -14,7 +13,7 @@ async function createQueue(body: CreateQueueProps) {
 
 export function useCreateQueueMutation() {
   const queryClient = useQueryClient()
-  return useMutation<QueueItem, ApiError, CreateQueueProps>({
+  return useMutation({
     mutationFn: createQueue,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: ["queues"]})
