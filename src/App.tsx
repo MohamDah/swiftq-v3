@@ -19,6 +19,7 @@ import Signup from "./pages/Signup";
 import { QueryProvider } from "./providers/QueryProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HostQueues from "./pages/host-queues/HostQueues";
+import HostQueueDetails from "./pages/HostQueueDetails";
 
 
 const router = createBrowserRouter([
@@ -65,14 +66,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-  //     {
-  //       path: "/my-queues/:queueId",
-  //       element: (
-  //         <ProtectedRoute>
-  //           <HostQueueDetails />
-  //         </ProtectedRoute>
-  //       ),
-  //     },
+      {
+        path: "/my-queues/:queueId",
+        element: (
+          <ProtectedRoute>
+            <HostQueueDetails />
+          </ProtectedRoute>
+        ),
+      },
   //     {
   //       path: "/qr/:queueId",
   //       element: (

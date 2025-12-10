@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoFull from "../assets/logoFull.png"
 import { useLoginMutation } from '@/queries/mutations/useLoginMutation';
+import { displayError } from '@/utils/displayError';
 
 
 export default function Login() {
@@ -35,7 +36,7 @@ export default function Login() {
         <div className="bg-white py-8 px-4 sm:px-10 border-8 border-primary rounded-3xl shadow-md shadow-black/25">
           {error && (
             <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-              {error.response?.data?.message || "Failed to login..."}
+              {displayError(error)}
             </div>
           )}
 
