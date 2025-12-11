@@ -1,3 +1,5 @@
+type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'CANCELLED' | 'NO_SHOW'
+
 export interface UserDto {
   id: number;
   email: string;
@@ -15,7 +17,7 @@ export interface QueueItem {
   requireNames: boolean;
   createdAt: string;
   updatedAt: string;
-  deletedAt: Date | null;
+  deletedAt: string | null;
   hostId: string;
   _count?: {
     entries: number
@@ -45,10 +47,10 @@ export interface Customer {
   id: string;
   position: number;
   customerName: string | null;
-  status: 'WAITING' | 'CALLED' | 'SERVED' | 'CANCELLED' | 'NO_SHOW';
+  status: QueueEntryStatus;
   estimatedWaitTime: number | null;
-  joinedAt: Date;
-  calledAt: Date | null;
+  joinedAt: string;
+  calledAt: string | null;
 }
 
 export type CustomerSessions = Record<string, string | undefined>
@@ -56,4 +58,25 @@ export type CustomerSessions = Record<string, string | undefined>
 export interface ExistingPosResponse {
   hasEntry: boolean;
   entry: Customer | null
+}
+
+export interface CustomerStatus {
+  sessionToken: string;
+  position: number;
+  status: QueueEntryStatus;
+  estimatedWaitTime: number | null;
+  customerName: string | null;
+  joinedAt: string;
+  calledAt: string | null;
+  peopleAhead: number;
+  queue: {
+    id: string;
+    qrCode: string;
+    name: string;
+    description: string | null;
+    businessName: string;
+    totalWaiting: number;
+    isActive: boolean;
+    averageServiceTime: number;
+  };
 }

@@ -1,0 +1,486 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  getQueue,
+  getCustomerStatus,
+  getCustomerPosition,
+  exitQueue
+} from '../firebase/services/queues';
+import {
+  doc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+} from 'firebase/firestore';
+import { db } from '../firebase/config';
+import type { Customer, Queue, QueueItem } from '../firebase/schema';
+import {
+  requestNotificationPermission,
+  storeCustomerFCMToken,
+  // onForegroundMessage,
+  // showNotification
+} from '../firebase/messaging';
+
+// /queue/:queueId/customer/:customerId
+export default function CustomerView() {
+  const { queueId, customerId } = useParams<{ queueId: string; customerId: string; }>();
+  const navigate = useNavigate();
+
+  const [queue, setQueue] = useState<QueueItem | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [position, setPosition] = useState<{ position: number; totalAhead: number; estimatedWaitTime: number | null; }>({
+    position: 0,
+    totalAhead: 0,
+    estimatedWaitTime: null,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [exitingQueue, setExitingQueue] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationPermissionAsked, setNotificationPermissionAsked] = useState(false);
+
+  // Add ref for previous customer status
+  const prevCustomerStatusRef = useRef<string | null>(null);
+  // Add ref for notification sound
+  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
+  // Initialize notification sound
+  useEffect(() => {
+    notificationSoundRef.current = new Audio('/notification-sound.mp3');
+    return () => {
+      // Cleanup if needed
+      if (notificationSoundRef.current) {
+        notificationSoundRef.current.pause();
+        notificationSoundRef.current = null;
+      }
+    };
+  }, []);
+
+  // Function to play notification sound
+  const playNotificationSound = () => {
+    if (notificationSoundRef.current) {
+      // Reset the audio to the beginning if it's already playing
+      notificationSoundRef.current.currentTime = 0;
+      // Play the sound
+      notificationSoundRef.current.play().catch(err => {
+        console.error("Error playing notification sound:", err);
+      });
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    if (!queueId || !customerId) {
+      setError('Invalid queue or customer ID');
+      setLoading(false);
+      return;
+    }
+
+    const fetchInitialData = async () => {
+      try {
+        // Get queue data
+        const queueData = await getQueue(queueId);
+        if (!queueData) {
+          setError('Queue not found');
+          setLoading(false);
+          return;
+        }
+        setQueue(queueData);
+
+        // Get customer data
+        const customerData = await getCustomerStatus(queueData.id, customerId);
+        if (!customerData) {
+          setError('Customer position not found');
+          setLoading(false);
+          return;
+        }
+
+        // Check if customer has already exited the queue
+        if (customerData.status === 'exited') {
+          setError('You have already left this queue');
+          setTimeout(() => {
+            navigate(`/join/${queueId}`);
+          }, 3000); // Redirect after 3 seconds
+        }
+
+        setCustomer(customerData);
+
+        // Get position data
+        const positionData = await getCustomerPosition(queueData.id, customerId);
+        setPosition(positionData);
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load queue information');
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [queueId, customerId, navigate]);
+
+  // Set up real-time listeners
+  useEffect(() => {
+    if (!queue?.id || !customerId || loading) return;
+
+    // Listen for changes to the customer document
+    const customerUnsubscribe = onSnapshot(
+      doc(db, 'queues', queue.id, 'customers', customerId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data() as Customer;
+
+          // Check if status changed to 'notified'
+          if (prevCustomerStatusRef.current !== 'notified' && data.status === 'notified') {
+            playNotificationSound();
+          } else if (data.status === 'notified' && data.lastNotifiedAt) {
+            // Play notification sound again if the customer is re-notified
+            // by checking if the lastNotifiedAt timestamp is different
+            if (!customer?.lastNotifiedAt ||
+              data.lastNotifiedAt.toMillis() !== customer.lastNotifiedAt?.toMillis()) {
+              playNotificationSound();
+            }
+          }
+
+          // Check if status is 'removed' and redirect to home page
+          if (data.status === 'removed') {
+            setError('Your position has been skipped');
+            // setTimeout(() => {
+            //   navigate('/');
+            // }, 3000); // Redirect after 3 seconds
+          }
+
+          // Update previous status ref
+          prevCustomerStatusRef.current = data.status;
+          setCustomer(data);
+        } else {
+          setError('Customer position no longer exists');
+        }
+      },
+      (err) => {
+        console.error('Error in customer listener:', err);
+        setError('Failed to get real-time updates');
+      }
+    );
+
+    // Listen for changes to customers ahead in the queue to update position
+    const customersAheadUnsubscribe = onSnapshot(
+      query(
+        collection(db, 'queues', queue.id, 'customers'),
+        where('status', 'in', ['waiting', 'notified']),
+      ),
+      async (snapshot) => {
+        console.log("ran", snapshot);
+
+        try {
+          // Recalculate total customers ahead
+          if (customer) {
+            const ahead = snapshot.docs.filter(
+              doc => (doc.data() as Customer).position < customer.position
+            ).length;
+
+            setPosition(prev => ({
+              ...prev,
+              totalAhead: ahead,
+              estimatedWaitTime: queue?.data.estimatedWaitPerPerson ? ahead * queue.data.estimatedWaitPerPerson : null
+            }));
+          }
+        } catch (err) {
+          console.error('Error calculating position:', err);
+        }
+      },
+      (err) => {
+        console.error('Error in queue listener:', err);
+      }
+    );
+
+    // Listen for changes to the queue document
+    const queueUnsubscribe = onSnapshot(
+      doc(db, 'queues', queue.id),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const queueData = snapshot.data() as Queue;
+          setQueue({ id: queue.id, data: queueData });
+
+          // Update estimated wait time if applicable
+          if (queueData.estimatedWaitPerPerson) {
+            setPosition(prev => ({
+              ...prev,
+              estimatedWaitTime: prev.totalAhead * queueData.estimatedWaitPerPerson!
+            }));
+          }
+        } else {
+          setError('Queue no longer exists');
+        }
+      },
+      (err) => {
+        console.error('Error in queue listener:', err);
+      }
+    );
+
+    // Clean up listeners
+    return () => {
+      customerUnsubscribe();
+      customersAheadUnsubscribe();
+      queueUnsubscribe();
+    };
+  }, [queue?.id, customerId, loading]);
+
+  // Handle exiting the queue
+  const handleExitQueue = async () => {
+    if (!queueId || !customerId) return;
+
+    if (!confirm('Are you sure you want to exit this queue? This action cannot be undone.')) {
+      return;
+    }
+
+    setExitingQueue(true);
+    try {
+      await exitQueue(queue?.id || "", customerId);
+      navigate('/');
+    } catch (err) {
+      console.error('Error exiting queue:', err);
+      setError('Failed to exit queue. Please try again.');
+      setExitingQueue(false);
+    }
+  };
+
+  // Helper function to format status for display
+  const getStatusDisplay = () => {
+    if (!customer) return '';
+
+    switch (customer.status) {
+      case 'notified':
+        return 'It\'s your turn! Please proceed to the service point.';
+      case 'waiting':
+        return 'Waiting in queue';
+      case 'served':
+        return 'You have been served';
+      case 'skipped':
+        return 'You were skipped';
+      default:
+        return 'Unknown status';
+    }
+  };
+
+  const getStatusColor = () => {
+    if (!customer) return 'bg-gray-100';
+
+    switch (customer.status) {
+      case 'notified':
+        return 'bg-green-100 border-green-500';
+      case 'waiting':
+        return 'bg-primary/60 border-primary-sat';
+      case 'served':
+        return 'bg-gray-100 border-gray-300';
+      case 'skipped':
+        return 'bg-yellow-100 border-yellow-400';
+      default:
+        return 'bg-gray-100 border-gray-300';
+    }
+  };
+
+  // Check if we should show the notification prompt
+  const renderNotificationPrompt = () => {
+    // Don't show if already enabled, if permission was denied, or if customer is done
+    if (notificationsEnabled ||
+      notificationPermissionAsked ||
+      customer?.status === 'served' ||
+      customer?.status === 'removed') {
+      return null;
+    }
+
+    return (
+      <div className="bg-blue-50/70 border border-blue-100 rounded-lg p-3 mb-4 text-sm">
+        <div className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span className="text-blue-700">Get notified when it's your turn</span>
+          <button
+            onClick={enableNotifications}
+            className="ml-auto text-blue-600 hover:text-blue-800 font-medium text-xs px-3 py-1 border border-blue-300 rounded-full bg-white/80 hover:bg-white transition-colors"
+          >
+            Enable
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    // Check if user has already enabled notifications
+    const checkNotificationStatus = () => {
+      if ('Notification' in window) {
+        const permission = Notification.permission;
+        if (permission === 'granted' && customer?.notificationsEnabled) {
+          setNotificationsEnabled(true);
+        } else if (permission === 'denied') {
+          setNotificationPermissionAsked(true);
+        }
+      }
+    };
+
+    checkNotificationStatus();
+  }, [customer?.notificationsEnabled]);
+
+  // useEffect(() => {
+
+  //   // Set up foreground message listener
+  //   onForegroundMessage((payload) => {
+  //     console.log('Foreground message received:', payload);
+
+  //     // Play your existing sound
+  //     playNotificationSound();
+
+  //     // Show browser notification
+  //     showNotification({
+  //       title: payload.notification?.title || 'SwiftQ Notification',
+  //       body: payload.notification?.body || "It's your turn!",
+  //       data: {
+  //         queueId: payload.data?.queueId,
+  //         customerId: payload.data?.customerId
+  //       }
+  //     });
+  //   }).catch(console.error);
+  // }, []);
+
+  // Add this function to handle enabling notifications
+  const enableNotifications = async () => {
+    if (!queueId || !customerId) {
+      console.error('Missing queueId or customerId');
+      return;
+    }
+
+    try {
+      setNotificationPermissionAsked(true);
+
+      // Request permission and get token
+      const token = await requestNotificationPermission();
+
+      if (token) {
+        // Store the token with the customer record
+        await storeCustomerFCMToken(queue?.id || "", customerId, token);
+        setNotificationsEnabled(true);
+        console.log('Notifications enabled successfully!');
+      } else {
+        console.log('Failed to get notification permission');
+      }
+    } catch (error) {
+      console.error('Error enabling notifications:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow text-center">
+        <p className="text-gray-600">Loading your position...</p>
+      </div>
+    );
+  }
+
+  if (error || !queue || !customer) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
+        <div className="text-red-500 text-center mb-4">{error || "Could not find your position in queue"}</div>
+        {error === 'You have already left this queue' && (
+          <p className="text-gray-600 text-center mb-4">Redirecting to join page...</p>
+        )}
+        <button
+          onClick={() => navigate("/")}
+          className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Return to Home
+        </button>
+      </div>
+    );
+  }
+
+  const etaWaitTime = Math.floor(((queue.data.estimatedWaitPerPerson || 0) * (position.totalAhead + 1)) / 1000 / 60);
+
+  return (
+    <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
+      
+      <h1 className="text-xl font-bold mb-2 text-center">{queue.data.queueName}</h1>
+      <p className="mb-6 text-center font-medium">
+        Host: {queue.data.hostName}
+      </p>
+
+      {renderNotificationPrompt()}
+
+      <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
+        <div className={`flex justify-around flex-wrap`}>
+          <h2 className="font-bold text-lg mb-2">
+            {customer.name}
+          </h2>
+          <div className="font-bold mb-2">
+            {getStatusDisplay()}
+          </div>
+        </div>
+
+        <div className="mt-5 flex justify-between items-center mb-2">
+          <span className='text-sm'>Your number:</span>
+          <span className="font-bold">#{position.position.toString().padStart(3, "0")}</span>
+        </div>
+        {customer.status === 'waiting' && (
+          <>
+            <div className="flex justify-between items-center mb-2">
+              <span className='text-sm'>People ahead of you:</span>
+              <span className="font-bold">{position.totalAhead}</span>
+            </div>
+            {queue.data.estimatedWaitPerPerson && (
+              <div className="flex justify-between items-center">
+                <span className='text-sm'>Estimated wait time:</span>
+                <span className="font-bold text-end">{etaWaitTime} minutes</span>
+              </div>
+            )}
+          </>
+        )}
+
+        {customer.status === 'notified' && (
+          <>
+            <div className="text-green-700 font-medium mt-2">
+              You were called at {customer.notifiedAt?.toDate().toLocaleTimeString()}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="mb-4 text-xs text-center text-gray-900">
+        <p>You joined this queue on {customer.joinedAt.toDate().toLocaleString()}</p>
+      </div>
+
+      {!queue.data.isActive && (
+        <div className="bg-yellow-100 p-3 rounded-md mb-4 text-yellow-800 text-xs">
+          Note: This queue is currently not accepting new customers.
+        </div>
+      )}
+
+      <div className="mt-8 border-t pt-4 space-y-3">
+        <p className="text-xs text-gray-900 mb-3">
+          Keep this page open to maintain your position and receive notifications when it's your turn.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
+        >
+          Return to Home
+        </button>
+
+        {/* Add Exit Queue button - only show if customer is waiting or notified */}
+        {(customer.status === 'waiting' || customer.status === 'notified') && (
+          <button
+            onClick={handleExitQueue}
+            disabled={exitingQueue}
+            className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25"
+          >
+            {exitingQueue ? 'Exiting...' : 'Exit Queue'}
+          </button>
+        )}
+      </div>
+
+    </div>
+  );
+}

@@ -12,7 +12,7 @@ import JoinQueue from "./pages/join-queue/JoinQueue";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 // import { JoinQueueLoader } from "./pages/join-queue/loader";
-// import CustomerView from "./pages/CustomerView";
+import CustomerView from "./pages/CustomerView";
 // import HostQueueDetails from "./pages/HostQueueDetails";
 // import Analytics from "./pages/Analytics";
 // import QR from "./pages/QR";
@@ -35,12 +35,12 @@ const router = createBrowserRouter([
       {
         element: <CustomerLayout />,
         children: [
-          //         {
-          //           path: "/queue/:queueId/customer/:customerId",
-          //           element: (
-          //             <CustomerView />
-          //           ),
-          //         },
+          {
+            path: "/queue/:qrCode/customer",
+            element: (
+              <CustomerView />
+            ),
+          },
           {
             path: "/join/:qrCode",
             element: (
