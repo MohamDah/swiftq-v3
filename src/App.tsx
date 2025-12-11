@@ -8,7 +8,7 @@ import CustomerLayout from "./components/CustomerLayout";
 import CreateQueue from "./pages/CreateQueue";
 // import HostQueues from "./pages/host-queues/HostQueues";
 import Home from "./pages/Home";
-// import JoinQueue from "./pages/join-queue/JoinQueue";
+import JoinQueue from "./pages/join-queue/JoinQueue";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 // import { JoinQueueLoader } from "./pages/join-queue/loader";
@@ -31,23 +31,22 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />
       },
-  //     // Host Views
+      //     // Host Views
       {
         element: <CustomerLayout />,
         children: [
-  //         {
-  //           path: "/queue/:queueId/customer/:customerId",
-  //           element: (
-  //             <CustomerView />
-  //           ),
-  //         },
-  //         {
-  //           path: "/join/:queueId",
-  //           element: (
-  //             <JoinQueue />
-  //           ),
-  //           loader: JoinQueueLoader
-  //         },
+          //         {
+          //           path: "/queue/:queueId/customer/:customerId",
+          //           element: (
+          //             <CustomerView />
+          //           ),
+          //         },
+          {
+            path: "/join/:qrCode",
+            element: (
+              <JoinQueue />
+            ),
+          },
           {
             path: "/create",
             element: (
@@ -74,25 +73,25 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-  //     {
-  //       path: "/qr/:queueId",
-  //       element: (
-  //         <ProtectedRoute>
-  //           <QR />
-  //         </ProtectedRoute>
-  //       ),
-  //     },
-  //     {
-  //       path: "/analytics",
-  //       element: (
-  //         <ProtectedRoute>
-  //           <Analytics />
-  //         </ProtectedRoute>
-  //       ),
-  //     },
+      //     {
+      //       path: "/qr/:queueId",
+      //       element: (
+      //         <ProtectedRoute>
+      //           <QR />
+      //         </ProtectedRoute>
+      //       ),
+      //     },
+      //     {
+      //       path: "/analytics",
+      //       element: (
+      //         <ProtectedRoute>
+      //           <Analytics />
+      //         </ProtectedRoute>
+      //       ),
+      //     },
 
 
-  //     // Auth Views
+      //     // Auth Views
       {
         path: "/login",
         element: <Login />
@@ -111,7 +110,7 @@ function App() {
   return (
     <QueryProvider>
       {/* <AuthProvider> */}
-        <RouterProvider router={router} />
+      <RouterProvider router={router} />
       {/* </AuthProvider> */}
     </QueryProvider>
   );

@@ -50,3 +50,10 @@ export interface Customer {
   joinedAt: Date;
   calledAt: Date | null;
 }
+
+export type CustomerSessions = Record<string, string | undefined>
+
+export interface ExistingPosResponse {
+  hasEntry: boolean;
+  entry: Customer | null
+}
