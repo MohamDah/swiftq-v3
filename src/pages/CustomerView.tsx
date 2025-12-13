@@ -3,6 +3,8 @@ import { useCustomerStatus } from '@/queries/useCustomerStatus';
 import { useParams, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '@/components/modals/Confirmation';
 import { useState } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorComponent from '@/components/ErrorComponent';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
@@ -61,35 +63,22 @@ export default function CustomerView() {
   if (isLoading || !status) {
     return (
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow text-center">
-        <p className="text-gray-600">Loading your position...</p>
+        <LoadingSpinner />
+        <p className="text-gray-600 mt-4">Loading your position...</p>
       </div>
     );
   }
 
   if (statusError) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Error Loading Queue Status</h2>
-          <p className="text-gray-600 mb-4">
-            {statusError instanceof Error ? statusError.message : 'Unable to load your queue status. Please try again.'}
-          </p>
-        </div>
-        <div className="space-y-3">
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
-          >
-            Retry
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            className="w-full font-semibold bg-lime-100 py-2 px-4 rounded-xl hover:bg-gray-300 shadow-lg shadow-black/25"
-          >
-            Return to Home
-          </button>
-        </div>
-      </div>
+      <ErrorComponent
+        error={statusError}
+        title="Error Loading Queue Status"
+        onRetry={() => window.location.reload()}
+        onGoBack={() => navigate("/")}
+        goBackText="Return to Home"
+        fullScreen
+      />
     );
   }
 

@@ -1,30 +1,40 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-// import { db } from '../firebase/config';
-// import type { Queue, Customer } from '../firebase/schema';
 import { formatDistance } from 'date-fns';
-import { Customer } from '@/types/api';
 import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails';
-import { displayError } from '@/utils/displayError';
+import QueueEntryCard from '@/components/host/QueueEntryCard';
+import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue';
+import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue';
+import { useState } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorComponent from '@/components/ErrorComponent';
+import ConfirmationModal from '@/components/modals/Confirmation';
 
 // /my-queues/:queueId
 export default function HostQueueDetails() {
   const { queueId = "" } = useParams<{ queueId: string; }>();
   const navigate = useNavigate();
-  const { data, isLoading, error } = useHostQueueDetailsQuery(queueId)
+  const { data: queue, isLoading, error } = useHostQueueDetailsQuery(queueId)
 
+  const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
+  const { mutateAsync: updateQueue, isPending: isUpdating } = useUpdateQueueMutation()
 
-  // const { data: currentUser } = useCurrentUser() // Get current user from auth context
-  // const [queue, setQueue] = useState<{ id: string, data: QueueItem; } | null>(null);
-  // const [customers, setCustomers] = useState<QueueCustomer[]>([]);
-  // const [isLoading, setIsLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
-  // const [isQueueActive, setIsQueueActive] = useState(false);
-  // const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  if (!data) return null
+  const handleDelete = async () => {
+    if (!queue) return
 
-  const queue = data
+    await deleteQueue({ id: queue.id })
+    setConfirmDelete(false)
+  }
 
+  const handleToggleActive = async () => {
+    if (!queue) return
+
+    await updateQueue({
+      queueId: queue.id,
+      isActive: !queue.isActive
+    })
+  }
 
   // Calculate average time
   // const avgWaitTime = useMemo(() => queue?.data.waitTimes ? queue?.data.waitTimes.reduce((a, i) => a + i, 0) / queue?.data.waitTimes.length : null, [queue?.data.waitTimes]);
@@ -172,23 +182,13 @@ export default function HostQueueDetails() {
 
   // Generate shareable join link
   const getJoinLink = () => {
+    if (!queue) return ''
     return `${window.location.origin}/join/${queue.qrCode}`;
   };
 
   // Copy join link to clipboard
   const copyJoinLink = () => {
     navigator.clipboard.writeText(getJoinLink());
-  };
-
-  // Get wait time in minutes
-  const getWaitTimeDisplay = (customer: Customer) => {
-    if (!customer) return "Unknown";
-    console.log(customer);
-    const joinTime = customer.joinedAt;
-    const now = new Date();
-
-    const duration = formatDistance(now, joinTime);
-    return duration;
   };
 
   // Add function to handle removing a customer
@@ -223,29 +223,22 @@ export default function HostQueueDetails() {
   //   }
   // };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <ErrorComponent
+        error={error}
+        title="Error Loading Queue"
+        message="Queue not found or you don't have access"
+        onGoBack={() => navigate('/my-queues')}
+        onRetry={() => window.location.reload()}
+        goBackText="Back to My Queues"
+        fullScreen
+      />
     );
   }
 
-  if (error || !queue) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 flex flex-col items-center">
-          <h2 className="text-xl font-bold text-red-600">Error</h2>
-          <p className="mt-2">{displayError(error) || "Queue not found or you don't have access"}</p>
-          <button
-            onClick={() => navigate('/my-queues')}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Back to My Queues
-          </button>
-        </div>
-      </div>
-    );
+  if (isLoading || !queue) {
+    return <LoadingSpinner fullScreen />;
   }
 
   return (
@@ -253,80 +246,82 @@ export default function HostQueueDetails() {
       <h1 className="text-2xl text-center font-bold flex-1 bg-white py-5 mt-6">{queue.name}</h1>
       <div className="container px-4 mx-auto my-10 lg:grid grid-cols-2 grid-rows-2 grid-flow-col lg:items-start lg:gap-x-10">
         {/* Queue status and actions */}
-        <div className="bg-white rounded-2xl overflow-hidden mb-6 shadow-md shadow-black/25">
-          <div className="m-4 p-4 bg-primary/60 rounded-2xl">
-            <div className="flex flex-col md:flex-row gap-2 flex-wrap md:items-center justify-between">
-              <div className='min-w-fit'>
-                <div className="flex items-center">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium border-2 ${queue.isActive ? 'bg-green-200 text-green-800 border-green-500' : 'bg-red-200 text-red-800 border-red-500'
-                    }`}>
-                    {queue.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                  <span className="ml-2 font-medium">{queue.entries.length} in queue</span>
+        <div className="flex flex-col gap-4">
+          <div className="bg-white rounded-2xl overflow-hidden mb-6 shadow-md shadow-black/25">
+            <div className="m-4 p-4 bg-primary/60 rounded-2xl">
+              <div className="flex flex-col md:flex-row gap-2 flex-wrap md:items-center justify-between">
+                <div className='min-w-fit'>
+                  <div className="flex items-center">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium border-2 ${queue.isActive ? 'bg-green-200 text-green-800 border-green-500' : 'bg-red-200 text-red-800 border-red-500'
+                      }`}>
+                      {queue.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    <span className="ml-2 font-medium">{queue.entries.length} in queue</span>
+                  </div>
+                  <p className="mt-2 text-sm">
+                    Created: {new Date(queue.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm">
+                    Names required: {queue.requireNames ? 'Yes' : 'No'}
+                  </p>
                 </div>
-                <p className="mt-2 text-sm">
-                  Created: {new Date(queue.createdAt).toLocaleDateString()}
-                </p>
-                <p className="text-sm">
-                  Names required: {queue.requireNames ? 'Yes' : 'No'}
-                </p>
-              </div>
-
-              <div className="mt-4 md:mt-0 flex gap-4 flex-wrap justify-center text-xs *:shadow-lg *:shadow-black/25">
-                <button
-                  // onClick={toggleQueueStatus}
-                  className={`px-3 py-2 text-white rounded-md ${queue.isActive
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-green-600 hover:bg-green-700'
-                    }`}
-                >
-                  {queue.isActive ? 'Deactivate Queue' : 'Activate Queue'}
-                </button>
-                <button
-                  onClick={copyJoinLink}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Copy Join Link
-                </button>
-                <Link
-                  target='_blank'
-                  to={`/qr/${queue.qrCode}`}
-                  className="px-3 py-2 bg-primary-sat rounded-md hover:bg-primary"
-                >
-                  View QR Code
-                </Link>
-                <button
-                  // onClick={handleDeleteQueue}
-                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                >
-                  Delete Queue
-                </button>
+                <div className="mt-4 md:mt-0 flex gap-4 flex-wrap justify-center text-xs *:shadow-lg *:shadow-black/25">
+                  <button
+                    onClick={handleToggleActive}
+                    disabled={isUpdating}
+                    className={`px-3 py-2 text-white rounded-md disabled:opacity-50 ${queue.isActive
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                  >
+                    {queue.isActive ? 'Deactivate Queue' : 'Activate Queue'}
+                  </button>
+                  <button
+                    onClick={copyJoinLink}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Copy Join Link
+                  </button>
+                  <Link
+                    target='_blank'
+                    to={`/qr/${queue.qrCode}`}
+                    className="px-3 py-2 bg-primary-sat rounded-md hover:bg-primary disabled:opacity-50"
+                  >
+                    View QR Code
+                  </Link>
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    disabled={isDeleting}
+                    className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Delete Queue
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Queue stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-white p-4 rounded-2xl shadow-md shadow-black/25">
-          <div className="bg-primary/60 rounded-lg shadow-md p-4">
-            <h3 className=" font-semibold text-gray-900">Current Queue Size</h3>
-            <p className="text-2xl font-bold text-green-700 mt-2">{queue.entries.length}</p>
-          </div>
-          <div className="bg-primary/60 rounded-lg shadow-md p-4">
-            <h3 className=" font-semibold text-gray-900">Average Wait Time</h3>
-            <p className="text-2xl font-bold text-green-700 mt-2">
-              {queue.averageServiceTime
-                ? `${formatDistance(new Date(Date.now() - queue.averageServiceTime), new Date())}`
-                : 'N/A'}
-            </p>
-          </div>
-          <div className="bg-primary/60 rounded-lg shadow-md p-4">
-            <h3 className=" font-semibold text-gray-900">Est. Total Time</h3>
-            <p className="text-2xl font-bold text-green-700 mt-2">
-              {queue.averageServiceTime && queue.entries.length
-                ? `${formatDistance(new Date(Date.now() - (queue.averageServiceTime * queue.entries.length)), new Date())}`
-                : 'N/A'}
-            </p>
+          {/* Queue stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-white p-4 rounded-2xl shadow-md shadow-black/25">
+            <div className="bg-primary/60 rounded-lg shadow-md p-4">
+              <h3 className=" font-semibold text-gray-900">Current Queue Size</h3>
+              <p className="text-2xl font-bold text-green-700 mt-2">{queue.entries.length}</p>
+            </div>
+            <div className="bg-primary/60 rounded-lg shadow-md p-4">
+              <h3 className=" font-semibold text-gray-900">Average Wait Time</h3>
+              <p className="text-2xl font-bold text-green-700 mt-2">
+                {queue.averageServiceTime
+                  ? `${formatDistance(new Date(Date.now() - queue.averageServiceTime), new Date())}`
+                  : 'N/A'}
+              </p>
+            </div>
+            <div className="bg-primary/60 rounded-lg shadow-md p-4">
+              <h3 className=" font-semibold text-gray-900">Est. Total Time</h3>
+              <p className="text-2xl font-bold text-green-700 mt-2">
+                {queue.averageServiceTime && queue.entries.length
+                  ? `${formatDistance(new Date(Date.now() - (queue.averageServiceTime * queue.entries.length)), new Date())}`
+                  : 'N/A'}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -346,62 +341,24 @@ export default function HostQueueDetails() {
           ) : (
             <div className="space-y-4 my-3">
               {queue.entries.map((customer) => (
-                <div
-                  key={customer.id}
-                  className={`mx-2 p-2 rounded-md bg-primary/40`}
-                >
-                  <div className="flex sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                        <span className="font-medium text-green-800">#{customer.position.toString().padStart(2, "0")}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {customer.customerName} {" "}
-                          <span className='text-xs'>#{customer.position.toString().padStart(2, "0")}</span>
-                        </h3>
-                        <div className="flex flex-col items-start mt-1">
-                          <span className="text-sm text-gray-600">Wait: {getWaitTimeDisplay(customer)}</span>
-                          <span className={`inline-flex items-center px-2 py-0.5 mt-1 rounded-full text-xs font-medium shadow-md shadow-black/25 ${customer.status === 'CALLED'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-blue-100 text-blue-800'
-                            }`}>
-                            {customer.status === 'CALLED' ? 'Called' : 'Waiting'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 self-center justify-end flex-wrap max-w-40">
-                      {/* Modified to allow notifying at any time if customer is in waiting or notified status */}
-                      {(customer.status === 'WAITING' || customer.status === 'CALLED') && (
-                        <button
-                          // onClick={() => notifyCustomer(customer.id)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
-                        >
-                          {customer.status === 'CALLED' ? 'Notify Again' : 'Notify'}
-                        </button>
-                      )}
-                      <button
-                        // onClick={() => serveCustomer(customer)}
-                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200"
-                      >
-                        Serve
-                      </button>
-                      <button
-                        // onClick={() => handleRemoveCustomer(customer.id)}
-                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-red-700 bg-red-100 hover:bg-red-200"
-                      >
-                        Skip
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <QueueEntryCard key={customer.id} customer={customer} />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Queue?"
+        message="Are you sure you want to delete this queue? This action cannot be undone and all customer data will be lost."
+        confirmText="Yes, Delete Queue"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

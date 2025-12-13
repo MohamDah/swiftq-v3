@@ -15,11 +15,14 @@ export function useDeleteQueueMutation() {
       toast.error(displayError(error))
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: [
-          QueryKeys.QUEUES
-        ]
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.QUEUES]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [QueryKeys.HOST_QUEUE]
+        }),
+      ])
     }
   })
 }
