@@ -1,4 +1,5 @@
 import { Customer } from '@/types/api'
+import { getCustomerName } from '@/utils/utils';
 import React from 'react'
 
 export default function QueueEntryCard({ customer }: { customer: Customer }) {
@@ -16,7 +17,7 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
           </div>
           <div>
             <h3 className="font-medium text-gray-900">
-              {customer.customerName || `Customer`} {" "}
+              {getCustomerName(customer.customerName, customer.id)} {" "}
               <span className='text-xs'>#{customer.position.toString().padStart(2, "0")}</span>
             </h3>
             <div className="flex flex-col items-start mt-1">

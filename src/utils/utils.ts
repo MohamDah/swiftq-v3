@@ -1,3 +1,4 @@
+
 // Generates a random alphanumeric ID consisting of 7 characters.
 export function generateId() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -9,4 +10,8 @@ export function generateId() {
   }
 
   return result;
+}
+
+export function getCustomerName(customerName: string | null, id: string) {
+  return customerName || `Customer ${id.slice(-4)}` || 'Unknown Customer'
 }

@@ -8,7 +8,10 @@ export default {
     extend: {
       colors: {
         "primary": "#D5F279",
-        "primary-sat": "#C3FF0380"
+        "primary-sat": "#C3FF0380",
+        "secondary": "#7C3AED",
+        "secondary-light": "#A78BFA",
+        "secondary-dark": "#5B21B6"
       },
       fontSize: {
         "2xs": ".7rem"

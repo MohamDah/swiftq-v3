@@ -5,6 +5,7 @@ import ConfirmationModal from '@/components/modals/Confirmation';
 import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
+import { getCustomerName } from '@/utils/utils';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
@@ -96,7 +97,7 @@ export default function CustomerView() {
         <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
           <div className="text-center">
             <h2 className="font-bold text-lg mb-2">
-              {status.customerName}
+              {getCustomerName(status.customerName, status.sessionToken)}
             </h2>
             <div className="font-semibold text-red-700">
               You have left the queue
@@ -112,6 +113,12 @@ export default function CustomerView() {
           <p className="text-xs text-gray-600 mb-3 text-center">
             You can join the queue again if it's still active.
           </p>
+          <button
+            onClick={() => navigate(`/join/${qrCode}`)}
+            className="w-full font-semibold bg-secondary-light py-2 px-4 rounded-xl hover:bg-secondary shadow-lg shadow-black/25"
+          >
+            Rejoin Queue
+          </button>
           <button
             onClick={() => navigate("/")}
             className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
@@ -134,7 +141,7 @@ export default function CustomerView() {
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         <div className={`flex justify-around flex-wrap`}>
           <h2 className="font-bold text-lg">
-            {status.customerName}
+            {getCustomerName(status.customerName, status.sessionToken)}
           </h2>
           <div className="font-semibold mb-2">
             {getStatusDisplay()}
