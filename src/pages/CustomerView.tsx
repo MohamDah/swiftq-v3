@@ -97,7 +97,7 @@ export default function CustomerView() {
         <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
           <div className="text-center">
             <h2 className="font-bold text-lg mb-2">
-              {getCustomerName(status.customerName, status.sessionToken)}
+              {getCustomerName(status)}
             </h2>
             <div className="font-semibold text-red-700">
               You have left the queue
@@ -141,7 +141,7 @@ export default function CustomerView() {
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         <div className={`flex justify-around flex-wrap`}>
           <h2 className="font-bold text-lg">
-            {getCustomerName(status.customerName, status.sessionToken)}
+             {getCustomerName(status)}
           </h2>
           <div className="font-semibold mb-2">
             {getStatusDisplay()}

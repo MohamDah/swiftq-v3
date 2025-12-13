@@ -47,6 +47,7 @@ export interface Customer {
   id: string;
   position: number;
   customerName: string | null;
+  displayNumber: string;
   status: QueueEntryStatus;
   estimatedWaitTime: number | null;
   joinedAt: string;
@@ -66,6 +67,7 @@ export interface CustomerStatus {
   status: QueueEntryStatus;
   estimatedWaitTime: number | null;
   customerName: string | null;
+  displayNumber: string;
   joinedAt: string;
   calledAt: string | null;
   peopleAhead: number;

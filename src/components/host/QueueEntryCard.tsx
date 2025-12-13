@@ -17,7 +17,7 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
           </div>
           <div>
             <h3 className="font-medium text-gray-900">
-              {getCustomerName(customer.customerName, customer.id)} {" "}
+              {getCustomerName(customer)} {" "}
               <span className='text-xs'>#{customer.position.toString().padStart(2, "0")}</span>
             </h3>
             <div className="flex flex-col items-start mt-1">

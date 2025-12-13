@@ -12,6 +12,6 @@ export function generateId() {
   return result;
 }
 
-export function getCustomerName(customerName: string | null, id: string) {
-  return customerName || `Customer ${id.slice(-4)}` || 'Unknown Customer'
+export function getCustomerName(customer: {displayNumber: string, customerName: string | null}) {
+  return customer.customerName || `${customer.displayNumber}` || 'Unknown Customer'
 }
