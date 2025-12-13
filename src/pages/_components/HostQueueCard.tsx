@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 
 export default function HostQueueCard({ queue }: { queue: QueueItem }) {
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
-  const {mutateAsync: updateQueue, isPending: isUpdating} = useUpdateQueueMutation()
+  const { mutateAsync: updateQueue, isPending: isUpdating } = useUpdateQueueMutation()
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -64,7 +64,7 @@ export default function HostQueueCard({ queue }: { queue: QueueItem }) {
               onClick={() => setConfirmDelete(true)}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
             >
-              {isDeleting? "Deleting..." : "Delete"}
+              {isDeleting ? "Deleting..." : "Delete"}
             </button>
           </div>
         </div>

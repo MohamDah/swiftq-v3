@@ -1,13 +1,22 @@
+import { useUpdateEntryMutation } from '@/queries/mutations/useUpdateEntry';
 import { useCustomerStatus } from '@/queries/useCustomerStatus';
 import { useParams, useNavigate } from 'react-router-dom';
+import ConfirmationModal from '@/components/modals/Confirmation';
+import { useState } from 'react';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
   const { qrCode } = useParams<{ qrCode: string; }>();
-  console.log(qrCode)
   const { data: status, isLoading, error: statusError } = useCustomerStatus(qrCode || null)
+  const { mutateAsync: updateEntry, isPending: isUpdating } = useUpdateEntryMutation()
   const navigate = useNavigate();
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
+  const exitQueue = async () => {
+    if (!status) return
+    await updateEntry({ entryId: status.sessionToken, status: 'CANCELLED' })
+    setShowExitConfirmation(false)
+  }
 
   // Helper function to format status for display
   const getStatusDisplay = () => {
@@ -22,6 +31,8 @@ export default function CustomerView() {
         return 'You have been served';
       case 'NO_SHOW':
         return 'You were skipped';
+      case 'CANCELLED':
+        return 'You have left the queue';
       default:
         return 'Unknown status';
     }
@@ -39,6 +50,8 @@ export default function CustomerView() {
         return 'bg-gray-100 border-gray-300';
       case 'NO_SHOW':
         return 'bg-yellow-100 border-yellow-400';
+      case 'CANCELLED':
+        return 'bg-red-100 border-red-400';
       default:
         return 'bg-gray-100 border-gray-300';
     }
@@ -81,6 +94,45 @@ export default function CustomerView() {
   }
 
   const etaWaitTime = status.queue.totalWaiting
+
+  // Show cancelled state UI
+  if (status.status === 'CANCELLED') {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
+        <h1 className="text-xl font-bold mb-2 text-center">{status.queue.name}</h1>
+        <p className="mb-6 text-center font-medium">
+          Host: {status.queue.businessName}
+        </p>
+
+        <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
+          <div className="text-center">
+            <h2 className="font-bold text-lg mb-2">
+              {status.customerName}
+            </h2>
+            <div className="font-semibold text-red-700">
+              You have left the queue
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4 text-xs text-center text-gray-900">
+          <p>You left this queue on {new Date().toLocaleString()}</p>
+        </div>
+
+        <div className="mt-8 border-t pt-4 space-y-3">
+          <p className="text-xs text-gray-600 mb-3 text-center">
+            You can join the queue again if it's still active.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
@@ -152,15 +204,26 @@ export default function CustomerView() {
         {/* Add Exit Queue button - only show if customer is waiting or notified */}
         {(status.status === 'WAITING' || status.status === 'CALLED') && (
           <button
-            // onClick={handleExitQueue}
-            // disabled={exitingQueue}
-            className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25"
+            onClick={() => setShowExitConfirmation(true)}
+            disabled={isUpdating}
+            className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25 disabled:opacity-50"
           >
-            {false ? 'Exiting...' : 'Exit Queue'}
+            {isUpdating ? 'Exiting...' : 'Exit Queue'}
           </button>
         )}
       </div>
 
+      <ConfirmationModal
+        open={showExitConfirmation}
+        onClose={() => setShowExitConfirmation(false)}
+        onConfirm={exitQueue}
+        title="Exit Queue?"
+        message="Are you sure you want to leave this queue? You will lose your position and need to rejoin if you change your mind."
+        confirmText="Yes, Exit Queue"
+        cancelText="Stay in Queue"
+        variant="danger"
+        isLoading={isUpdating}
+      />
     </div>
   );
 }

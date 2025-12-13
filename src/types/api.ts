@@ -80,3 +80,7 @@ export interface CustomerStatus {
     averageServiceTime: number;
   };
 }
+
+export interface UpdateEntryDto {
+  status?: QueueEntryStatus
+}
