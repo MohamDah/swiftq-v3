@@ -1,4 +1,3 @@
-import { useUpdateEntryMutation } from '@/queries/mutations/useUpdateEntry';
 import { useCustomerStatus } from '@/queries/useCustomerStatus';
 import { useParams, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '@/components/modals/Confirmation';
@@ -6,18 +5,19 @@ import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
 import { getCustomerName } from '@/utils/utils';
+import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
   const { qrCode } = useParams<{ qrCode: string; }>();
   const { data: status, isLoading, error: statusError } = useCustomerStatus(qrCode || null)
-  const { mutateAsync: updateEntry, isPending: isUpdating } = useUpdateEntryMutation()
+  const { mutateAsync: cancelEntry, isPending: isCancelling } = useCancelEntryMutation()
   const navigate = useNavigate();
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   const exitQueue = async () => {
     if (!status) return
-    await updateEntry({ entryId: status.sessionToken, status: 'CANCELLED' })
+    await cancelEntry({ entryId: status.sessionToken })
     setShowExitConfirmation(false)
   }
 
@@ -141,7 +141,7 @@ export default function CustomerView() {
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         <div className={`flex justify-around flex-wrap`}>
           <h2 className="font-bold text-lg">
-             {getCustomerName(status)}
+            {getCustomerName(status)}
           </h2>
           <div className="font-semibold mb-2">
             {getStatusDisplay()}
@@ -201,10 +201,10 @@ export default function CustomerView() {
         {(status.status === 'WAITING' || status.status === 'CALLED') && (
           <button
             onClick={() => setShowExitConfirmation(true)}
-            disabled={isUpdating}
+            disabled={isCancelling}
             className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25 disabled:opacity-50"
           >
-            {isUpdating ? 'Exiting...' : 'Exit Queue'}
+            {isCancelling ? 'Exiting...' : 'Exit Queue'}
           </button>
         )}
       </div>
@@ -218,7 +218,7 @@ export default function CustomerView() {
         confirmText="Yes, Exit Queue"
         cancelText="Stay in Queue"
         variant="danger"
-        isLoading={isUpdating}
+        isLoading={isCancelling}
       />
     </div>
   );

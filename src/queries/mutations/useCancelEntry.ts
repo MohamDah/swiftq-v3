@@ -1,15 +1,14 @@
 import axiosInstance from "@/api/axiosInstance";
-import { UpdateEntryDto } from "@/types/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "../queryKeys";
 import { toast } from "react-toastify";
 import { displayError } from "@/utils/displayError";
 
-export function useUpdateEntryMutation() {
+export function useCancelEntryMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ entryId, ...dto }: UpdateEntryDto & { entryId: string }) => {
-      return axiosInstance.patch(`entries/${entryId}`, dto)
+    mutationFn: ({ entryId }: { entryId: string }) => {
+      return axiosInstance.post(`entries/${entryId}/cancel`)
     },
     onSuccess: async () => {
       await Promise.all([
