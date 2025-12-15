@@ -1,8 +1,11 @@
+import { useCallEntry } from '@/queries/mutations/useCallEntry';
 import { Customer } from '@/types/api'
 import { getCustomerName } from '@/utils/utils';
 import React from 'react'
 
 export default function QueueEntryCard({ customer }: { customer: Customer }) {
+  const { mutateAsync: callEntry, isPending: isCalling } = useCallEntry()
+
   // Get wait time in minutes
   const getWaitTimeDisplay = () => {
     return customer.estimatedWaitTime + ' minutes';
@@ -36,10 +39,11 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
           {/* Modified to allow notifying at any time if customer is in waiting or notified status */}
           {(customer.status === 'WAITING' || customer.status === 'CALLED') && (
             <button
-              // onClick={() => notifyCustomer(customer.id)}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
+              onClick={() => callEntry({ entryId: customer.id })}
+              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50"
+              disabled={isCalling}
             >
-              {customer.status === 'CALLED' ? 'Notify Again' : 'Notify'}
+              {customer.status === 'CALLED' ? 'Notify Again' : 'Call'}
             </button>
           )}
           <button
