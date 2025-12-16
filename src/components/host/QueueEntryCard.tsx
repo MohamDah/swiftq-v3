@@ -1,10 +1,12 @@
 import { useCallEntry } from '@/queries/mutations/useCallEntry';
+import { useServeEntry } from '@/queries/mutations/useServeEntry';
 import { Customer } from '@/types/api'
 import { getCustomerName } from '@/utils/utils';
 import React from 'react'
 
 export default function QueueEntryCard({ customer }: { customer: Customer }) {
   const { mutateAsync: callEntry, isPending: isCalling } = useCallEntry()
+  const { mutateAsync: serveEntry, isPending: isServing } = useServeEntry()
 
   // Get wait time in minutes
   const getWaitTimeDisplay = () => {
@@ -36,7 +38,6 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
         </div>
 
         <div className="flex gap-3 self-center justify-end flex-wrap max-w-40">
-          {/* Modified to allow notifying at any time if customer is in waiting or notified status */}
           {(customer.status === 'WAITING' || customer.status === 'CALLED') && (
             <button
               onClick={() => callEntry({ entryId: customer.id })}
@@ -47,8 +48,9 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
             </button>
           )}
           <button
-            // onClick={() => serveCustomer(customer)}
-            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200"
+            onClick={() => serveEntry({ entryId: customer.id })}
+            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200 disabled:opacity-50"
+            disabled={isServing}
           >
             Serve
           </button>
