@@ -191,7 +191,7 @@ export default function CustomerView() {
             </div>
             <div className="flex justify-between items-center">
               <span className='text-sm'>Status:</span>
-              <span className="font-bold">{status.status}</span>
+              <span className="font-bold capitalize">{status.status.toLowerCase()}</span>
             </div>
           </>
         )}

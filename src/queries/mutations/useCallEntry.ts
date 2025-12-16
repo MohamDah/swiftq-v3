@@ -1,8 +1,8 @@
 import axiosInstance from "@/api/axiosInstance";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QueryKeys } from "../queryKeys";
 import { toast } from "react-toastify";
 import { displayError } from "@/utils/displayError";
+import { invalidateEntryQueries } from "./helpers";
 
 export function useCallEntry() {
   const queryClient = useQueryClient()
@@ -11,10 +11,7 @@ export function useCallEntry() {
       return axiosInstance.post(`entries/${entryId}/call`)
     },
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.CUSTOMER_STATUS] }),
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.HOST_QUEUE] }),
-      ])
+      await invalidateEntryQueries(queryClient)
     },
     onError: error => {
       toast.error(displayError(error))

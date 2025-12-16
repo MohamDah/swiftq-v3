@@ -1,8 +1,11 @@
 import { useJoinQueueMutation } from "@/queries/mutations/useJoinQueue";
+import { useExistingPositionQuery } from "@/queries/useExistingPosition";
 import { usePublicQueueDetailsQuery } from "@/queries/usePublicQueueDetails";
 import { displayError } from "@/utils/displayError";
 import { useForm } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface JoinQueueForm {
   customerName?: string
@@ -13,10 +16,18 @@ interface JoinQueueForm {
 export default function JoinQueue() {
   const { qrCode } = useParams<{ qrCode: string; }>();
   const { data: queueData, isLoading, error: queueError } = usePublicQueueDetailsQuery(qrCode || null)
+  const { data: entryStatus, isLoading: isLoadingStatus } = useExistingPositionQuery(qrCode)
   const { mutateAsync: joinQueue, isPending: joining, error: joinError } = useJoinQueueMutation()
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { isValid, errors } } = useForm<JoinQueueForm>()
+
+  // Check if user already has an active position
+  useEffect(() => {
+    if (entryStatus?.hasEntry && entryStatus.entry) {
+      navigate(`/queue/${qrCode}/customer`, { replace: true });
+    }
+  }, [entryStatus, qrCode, navigate]);
 
   // Handle form submission to join the queue
   const handleJoinQueue = async (data: JoinQueueForm) => {
@@ -45,12 +56,16 @@ export default function JoinQueue() {
     );
   }
 
-  if (isLoading || !queueData) {
-    return null
+  if (isLoading || isLoadingStatus || !queueData) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow text-center flex flex-col items-center">
+        <LoadingSpinner />
+        <p className="text-gray-600 mt-4">Loading queue details...</p>
+      </div>
+    );
   }
 
   return (
-
     <div className="max-w-md mx-auto p-6 bg-white rounded-[40px] shadow-lg shadow-black/25">
       <h1 className="text-xl text-center font-bold mb-4">{queueData.name}</h1>
 
@@ -80,7 +95,6 @@ export default function JoinQueue() {
               required={queueData.requireNames}
             />
             {errors.customerName && <p className="mt-1 text-sm text-red-700">{errors.customerName.message}</p>}
-
           </div>
 
           <button
@@ -101,7 +115,7 @@ export default function JoinQueue() {
         {queueData.averageServiceTime && (
           <div className="flex justify-between items-center">
             <span className="font-semibold">Est. wait per person:</span>
-            <span>{queueData.averageServiceTime}</span>
+            <span>{queueData.averageServiceTime} min</span>
           </div>
         )}
       </div>

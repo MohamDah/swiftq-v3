@@ -6,7 +6,6 @@ import { ExistingPosResponse } from "@/types/api";
 
 export function useExistingPositionQuery(qrCode = '') {
   const sessionId = getPositionToken(qrCode)
-  console.log(sessionId)
   return useQuery({
     queryKey: [QueryKeys.EXISTING_POS, qrCode],
     queryFn: async () => {
@@ -14,6 +13,9 @@ export function useExistingPositionQuery(qrCode = '') {
         `queues/${qrCode}/check-entry?token=${sessionId}`
       )
       return data
-    }
+    },
+    enabled: !!qrCode && !!sessionId,
+    gcTime: 0,
+    staleTime: 0
   })
 }
