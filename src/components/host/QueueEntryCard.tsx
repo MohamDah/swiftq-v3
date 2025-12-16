@@ -45,19 +45,21 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
               {customer.status === 'CALLED' ? 'Notify Again' : 'Call'}
             </button>
           )}
-          <button
-            onClick={() => serveEntry({ entryId: customer.id })}
-            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200 disabled:opacity-50"
-            disabled={isServing}
-          >
-            Serve
-          </button>
-          <button
+          {customer.status === 'CALLED' && (
+            <button
+              onClick={() => serveEntry({ entryId: customer.id })}
+              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200 disabled:opacity-50"
+              disabled={isServing}
+            >
+              Serve
+            </button>
+          )}
+          {/* <button
             // onClick={() => handleRemoveCustomer(customer.id)}
             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-red-700 bg-red-100 hover:bg-red-200"
           >
             Skip
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
