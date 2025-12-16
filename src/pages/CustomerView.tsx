@@ -4,7 +4,6 @@ import ConfirmationModal from '@/components/modals/Confirmation';
 import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
-import { getCustomerName } from '@/utils/utils';
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
 
 // /queue/:queueId/customer
@@ -94,14 +93,25 @@ export default function CustomerView() {
           Host: {status.queue.businessName}
         </p>
 
-        <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
-          <div className="text-center">
-            <h2 className="font-bold text-lg mb-2">
-              {getCustomerName(status)}
-            </h2>
-            <div className="font-semibold text-red-700">
-              You have left the queue
+        <div className='flex justify-center gap-6 mb-6'>
+          {/* Customer Name if exists */}
+          {status.customerName && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">Customer</p>
+              <p className="text-lg font-semibold text-primary-text">{status.customerName}</p>
             </div>
+          )}
+
+          {/* Display Number prominently */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-1">Your Number</p>
+            <p className="text-4xl font-bold text-primary-text">{status.displayNumber}</p>
+          </div>
+        </div>
+
+        <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
+          <div className="text-center font-semibold text-red-700">
+            You have left the queue
           </div>
         </div>
 
@@ -138,41 +148,73 @@ export default function CustomerView() {
         Host: {status.queue.businessName}
       </p>
 
-      <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
-        <div className={`flex justify-around flex-wrap`}>
-          <h2 className="font-bold text-lg">
-            {getCustomerName(status)}
-          </h2>
-          <div className="font-semibold mb-2">
-            {getStatusDisplay()}
+      <div className='flex justify-center gap-6 mb-6'>
+        {/* Customer Name if exists */}
+        {status.customerName && (
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-1">Customer</p>
+            <p className="text-lg font-semibold text-primary-text">{status.customerName}</p>
           </div>
-        </div>
+        )}
 
-        <div className="mt-5 flex justify-between items-center mb-2">
-          <span className='text-sm'>Your position:</span>
-          <span className="font-bold">#{(status.peopleAhead + 1).toString().padStart(3, "0")}</span>
+        {/* Display Number prominently */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600 mb-1">Your Number</p>
+          <p className="text-4xl font-bold text-primary-text">{status.displayNumber}</p>
         </div>
+      </div>
+
+
+      {/* Actual Position Highlight Box */}
+      <div className="bg-primary/20 border-2 border-primary-sat rounded-xl p-4 mb-6 text-center">
+        <p className="text-xl font-bold">
+          You are #{(status.peopleAhead + 1).toString().padStart(2, "0")} in line
+        </p>
+      </div>
+
+      <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         {status.status === 'WAITING' && (
           <>
             <div className="flex justify-between items-center mb-2">
-              <span className='text-sm'>People ahead of you:</span>
+              <span className='text-sm'>People ahead of you</span>
               <span className="font-bold">{status.peopleAhead}</span>
             </div>
             {status.estimatedWaitTime && (
-              <div className="flex justify-between items-center">
-                <span className='text-sm'>Estimated wait time:</span>
-                <span className="font-bold text-end">{etaWaitTime} minutes</span>
+              <div className="flex justify-between items-center mb-2">
+                <span className='text-sm'>Estimated wait:</span>
+                <span className="font-bold">{Math.ceil((status.peopleAhead + 1) * (status.queue.averageServiceTime || 0))} minutes</span>
               </div>
             )}
+            <div className="flex justify-between items-center mb-2">
+              <span className='text-sm'>Total in queue:</span>
+              <span className="font-bold">{etaWaitTime}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className='text-sm'>Status:</span>
+              <span className="font-bold">{status.status}</span>
+            </div>
           </>
         )}
 
-        {status.status === 'CALLED' && status.calledAt && (
+        {status.status === 'CALLED' && (
           <>
-            <div className="text-green-700 font-medium mt-2">
-              You were called at {new Date(status.calledAt).toLocaleTimeString()}
+            <div className="text-center">
+              <p className="font-bold text-lg text-green-700 mb-2">
+                It's your turn! Please proceed to the service point.
+              </p>
+              {status.calledAt && (
+                <p className="text-sm text-green-700">
+                  Called at {new Date(status.calledAt).toLocaleTimeString()}
+                </p>
+              )}
             </div>
           </>
+        )}
+
+        {(status.status !== 'WAITING' && status.status !== 'CALLED') && (
+          <div className="text-center font-semibold">
+            {getStatusDisplay()}
+          </div>
         )}
       </div>
 
@@ -192,7 +234,7 @@ export default function CustomerView() {
         </p>
         <button
           onClick={() => navigate("/")}
-          className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
+          className="w-full font-semibold bg-primary py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
         >
           Return to Home
         </button>
@@ -204,7 +246,7 @@ export default function CustomerView() {
             disabled={isCancelling}
             className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25 disabled:opacity-50"
           >
-            {isCancelling ? 'Exiting...' : 'Exit Queue'}
+            {isCancelling ? 'Leaving Queue...' : 'Leave Queue'}
           </button>
         )}
       </div>

@@ -1,8 +1,6 @@
 import { useCallEntry } from '@/queries/mutations/useCallEntry';
 import { useServeEntry } from '@/queries/mutations/useServeEntry';
 import { Customer } from '@/types/api'
-import { getCustomerName } from '@/utils/utils';
-import React from 'react'
 
 export default function QueueEntryCard({ customer }: { customer: Customer }) {
   const { mutateAsync: callEntry, isPending: isCalling } = useCallEntry()
@@ -18,11 +16,11 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
       <div className="flex sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-4">
           <div className="flex-shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center">
-            <span className="font-medium text-green-800">#{customer.position.toString().padStart(2, "0")}</span>
+            <span className="font-medium text-sm text-green-800">#{customer.displayNumber}</span>
           </div>
           <div>
             <h3 className="font-medium text-gray-900">
-              {getCustomerName(customer)} {" "}
+              {customer.customerName || 'Customer'} {" "}
               <span className='text-xs'>#{customer.position.toString().padStart(2, "0")}</span>
             </h3>
             <div className="flex flex-col items-start mt-1">

@@ -11,7 +11,3 @@ export function generateId() {
 
   return result;
 }
-
-export function getCustomerName(customer: {displayNumber: string, customerName: string | null}) {
-  return customer.customerName || `${customer.displayNumber}` || 'Unknown Customer'
-}
