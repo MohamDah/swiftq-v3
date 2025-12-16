@@ -46,6 +46,7 @@ export interface HostQueueDetails extends Omit<QueueItem, '_count'> {
 export interface Customer {
   id: string;
   position: number;
+  storePosition: number;
   customerName: string | null;
   displayNumber: string;
   status: QueueEntryStatus;
@@ -64,6 +65,7 @@ export interface ExistingPosResponse {
 export interface CustomerStatus {
   sessionToken: string;
   position: number;
+  storePosition: number;
   status: QueueEntryStatus;
   estimatedWaitTime: number | null;
   customerName: string | null;

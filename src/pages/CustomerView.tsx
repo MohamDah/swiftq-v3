@@ -149,8 +149,8 @@ export default function CustomerView() {
         </div>
 
         <div className="mt-5 flex justify-between items-center mb-2">
-          <span className='text-sm'>Your number:</span>
-          <span className="font-bold">#{status.position.toString().padStart(3, "0")}</span>
+          <span className='text-sm'>Your position:</span>
+          <span className="font-bold">#{(status.peopleAhead + 1).toString().padStart(3, "0")}</span>
         </div>
         {status.status === 'WAITING' && (
           <>
