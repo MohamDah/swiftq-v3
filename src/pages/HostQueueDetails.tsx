@@ -8,6 +8,7 @@ import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
 import ConfirmationModal from '@/components/modals/Confirmation';
+import { useHostES } from '@/hooks/useHostES';
 
 // /my-queues/:queueId
 export default function HostQueueDetails() {
@@ -17,6 +18,8 @@ export default function HostQueueDetails() {
 
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
   const { mutateAsync: updateQueue, isPending: isUpdating } = useUpdateQueueMutation()
+
+  useHostES({ queueId })
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
