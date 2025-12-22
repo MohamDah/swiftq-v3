@@ -112,62 +112,6 @@ export default function CustomerView() {
 
   const etaWaitTime = status.queue.totalWaiting
 
-  // Show cancelled state UI
-  if (status.status === 'CANCELLED') {
-    return (
-      <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
-        <h1 className="text-xl font-bold mb-2 text-center">{status.queue.name}</h1>
-        <p className="mb-6 text-center font-medium">
-          Host: {status.queue.businessName}
-        </p>
-
-        <div className='flex justify-center gap-6 mb-6'>
-          {/* Customer Name if exists */}
-          {status.customerName && (
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Customer</p>
-              <p className="text-lg font-semibold text-primary-text">{status.customerName}</p>
-            </div>
-          )}
-
-          {/* Display Number prominently */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Your Number</p>
-            <p className="text-4xl font-bold text-primary-text">{status.displayNumber}</p>
-          </div>
-        </div>
-
-        <div className="p-4 border rounded-3xl mb-6 bg-red-100 border-red-400">
-          <div className="text-center font-semibold text-red-700">
-            You have left the queue
-          </div>
-        </div>
-
-        <div className="mb-4 text-xs text-center text-gray-900">
-          <p>You left this queue on {new Date().toLocaleString()}</p>
-        </div>
-
-        <div className="mt-8 border-t pt-4 space-y-3">
-          <p className="text-xs text-gray-600 mb-3 text-center">
-            You can join the queue again if it's still active.
-          </p>
-          <button
-            onClick={() => navigate(`/join/${qrCode}`)}
-            className="w-full font-semibold bg-secondary-light py-2 px-4 rounded-xl hover:bg-secondary shadow-lg shadow-black/25"
-          >
-            Rejoin Queue
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
-          >
-            Return to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-md mx-auto mt-10 p-6 pb-9 bg-white rounded-[40px] shadow-lg shadow-black/25">
 
@@ -193,12 +137,14 @@ export default function CustomerView() {
       </div>
 
 
-      {/* Actual Position Highlight Box */}
-      <div className="bg-primary/20 border-2 border-primary-sat rounded-xl p-4 mb-6 text-center">
-        <p className="text-xl font-bold">
-          You are #{(status.peopleAhead + 1).toString().padStart(2, "0")} in line
-        </p>
-      </div>
+      {/* Actual Position Highlight Box - only show when waiting */}
+      {status.status === 'WAITING' && (
+        <div className="bg-primary/20 border-2 border-primary-sat rounded-xl p-4 mb-6 text-center">
+          <p className="text-xl font-bold">
+            You are #{(status.peopleAhead + 1).toString().padStart(2, "0")} in line
+          </p>
+        </div>
+      )}
 
       <div className={`p-4 border rounded-3xl mb-6 ${getStatusColor()}`}>
         {status.status === 'WAITING' && (
@@ -247,7 +193,7 @@ export default function CustomerView() {
       </div>
 
       <div className="mb-4 text-xs text-center text-gray-900">
-        <p>You joined this queue on {new Date(status.joinedAt).toLocaleString()}</p>
+        <p>You {status.status === 'CANCELLED' ? 'left' : 'joined'} this queue on {new Date(status.status === 'CANCELLED' ? new Date() : status.joinedAt).toLocaleString()}</p>
       </div>
 
       {!status.queue.isActive && (
@@ -257,25 +203,55 @@ export default function CustomerView() {
       )}
 
       <div className="mt-8 border-t pt-4 space-y-3">
-        <p className="text-xs text-gray-900 mb-3">
-          Keep this page open to maintain your position and receive notifications when it's your turn.
-        </p>
-        <button
-          onClick={() => navigate("/")}
-          className="w-full font-semibold bg-primary py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
-        >
-          Return to Home
-        </button>
+        {status.status === 'CANCELLED' ? (
+          <>
+            <p className="text-xs text-gray-600 mb-3 text-center">
+              You can join the queue again if it's still active.
+            </p>
+            <button
+              onClick={() => navigate(`/join/${qrCode}`)}
+              className="w-full font-semibold bg-secondary-light py-2 px-4 rounded-xl hover:bg-secondary shadow-lg shadow-black/25"
+            >
+              Rejoin Queue
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full font-semibold bg-primary-sat py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
+            >
+              Return to Home
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-gray-900 mb-3">
+              Keep this page open to maintain your position and receive notifications when it's your turn.
+            </p>
+            {status.status === 'SERVED' && (
+              <button
+                onClick={() => navigate(`/join/${qrCode}`)}
+                className="w-full font-semibold bg-secondary-light py-2 px-4 rounded-xl hover:bg-secondary shadow-lg shadow-black/25"
+              >
+                Rejoin Queue
+              </button>
+            )}
+            <button
+              onClick={() => navigate("/")}
+              className="w-full font-semibold bg-primary py-2 px-4 rounded-xl hover:bg-primary shadow-lg shadow-black/25"
+            >
+              Return to Home
+            </button>
 
-        {/* Add Exit Queue button - only show if customer is waiting or notified */}
-        {(status.status === 'WAITING' || status.status === 'CALLED') && (
-          <button
-            onClick={() => setShowExitConfirmation(true)}
-            disabled={isCancelling}
-            className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25 disabled:opacity-50"
-          >
-            {isCancelling ? 'Leaving Queue...' : 'Leave Queue'}
-          </button>
+            {/* Add Exit Queue button - only show if customer is waiting or notified */}
+            {(status.status === 'WAITING' || status.status === 'CALLED') && (
+              <button
+                onClick={() => setShowExitConfirmation(true)}
+                disabled={isCancelling}
+                className="w-full font-semibold bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 shadow-lg shadow-black/25 disabled:opacity-50"
+              >
+                {isCancelling ? 'Leaving Queue...' : 'Leave Queue'}
+              </button>
+            )}
+          </>
         )}
       </div>
 
