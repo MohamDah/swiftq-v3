@@ -1,7 +1,7 @@
 import { useCustomerStatus } from '@/queries/useCustomerStatus';
 import { useParams, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '@/components/modals/Confirmation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
@@ -13,9 +13,31 @@ export default function CustomerView() {
   const { data: status, isLoading, error: statusError } = useCustomerStatus(qrCode || null)
   const { mutateAsync: cancelEntry, isPending: isCancelling } = useCancelEntryMutation()
   const navigate = useNavigate();
+
+  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    notificationSoundRef.current = new Audio('/notification-sound.mp3');
+    return () => {
+      // Cleanup if needed
+      if (notificationSoundRef.current) {
+        notificationSoundRef.current.pause();
+        notificationSoundRef.current = null;
+      }
+    };
+  }, []);
+
   useCustomerES({
     qrCode,
-    sessionToken: status?.sessionToken
+    sessionToken: status?.sessionToken,
+    onMessage: (data) => {
+      if (data.type === 'CALL') {
+        if (notificationSoundRef.current) {
+          notificationSoundRef.current.currentTime = 0;
+          notificationSoundRef.current.play()
+        }
+      }
+      return true
+    }
   })
 
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);

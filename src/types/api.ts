@@ -88,3 +88,7 @@ export interface CustomerStatus {
 export interface UpdateEntryDto {
   status?: QueueEntryStatus
 }
+
+export interface CustomerEventDto {
+  type: 'QUEUE_ADVANCED' | 'STATUS_CHANGE' | 'CALL';
+}
