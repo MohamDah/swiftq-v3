@@ -21,7 +21,7 @@ export default function LoadingSpinner({
 
   const spinner = (
     <Loader2 
-      className={`animate-spin ${sizeClasses[size]} ${color}`}
+      className={`animate-spin mx-auto ${sizeClasses[size]} ${color}`}
       role="status"
       aria-label="Loading"
     />
