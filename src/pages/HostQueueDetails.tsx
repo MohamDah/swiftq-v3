@@ -111,7 +111,7 @@ export default function HostQueueDetails() {
                   </button>
                   <Link
                     target='_blank'
-                    to={`/qr/${queue.qrCode}`}
+                    to={`/qr/${queue.id}`}
                     className="px-3 py-2 bg-primary-sat rounded-md hover:bg-primary disabled:opacity-50"
                   >
                     View QR Code

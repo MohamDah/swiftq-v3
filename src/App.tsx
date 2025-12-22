@@ -15,7 +15,7 @@ import Signup from "./pages/Signup";
 import CustomerView from "./pages/CustomerView";
 // import HostQueueDetails from "./pages/HostQueueDetails";
 // import Analytics from "./pages/Analytics";
-// import QR from "./pages/QR";
+import QR from "./pages/QR";
 import { QueryProvider } from "./providers/QueryProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HostQueues from "./pages/host-queues/HostQueues";
@@ -73,14 +73,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      //     {
-      //       path: "/qr/:queueId",
-      //       element: (
-      //         <ProtectedRoute>
-      //           <QR />
-      //         </ProtectedRoute>
-      //       ),
-      //     },
+      {
+        path: "/qr/:queueId",
+        element: (
+          <ProtectedRoute>
+            <QR />
+          </ProtectedRoute>
+        ),
+      },
       //     {
       //       path: "/analytics",
       //       element: (
