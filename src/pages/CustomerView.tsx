@@ -5,6 +5,7 @@ import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
+import { useCustomerES } from '@/hooks/useCustomerES';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
@@ -12,6 +13,11 @@ export default function CustomerView() {
   const { data: status, isLoading, error: statusError } = useCustomerStatus(qrCode || null)
   const { mutateAsync: cancelEntry, isPending: isCancelling } = useCancelEntryMutation()
   const navigate = useNavigate();
+  useCustomerES({
+    qrCode,
+    sessionToken: status?.sessionToken
+  })
+
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   const exitQueue = async () => {
