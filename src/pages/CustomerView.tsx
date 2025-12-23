@@ -1,11 +1,12 @@
 import { useCustomerStatus } from '@/queries/useCustomerStatus';
 import { useParams, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '@/components/modals/Confirmation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorComponent from '@/components/ErrorComponent';
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
 import { useCustomerES } from '@/hooks/useCustomerES';
+import { useAudio } from '@/hooks/useAudio';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
@@ -13,28 +14,14 @@ export default function CustomerView() {
   const { data: status, isLoading, error: statusError } = useCustomerStatus(qrCode || null)
   const { mutateAsync: cancelEntry, isPending: isCancelling } = useCancelEntryMutation()
   const navigate = useNavigate();
-
-  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => {
-    notificationSoundRef.current = new Audio('/notification-sound.mp3');
-    return () => {
-      // Cleanup if needed
-      if (notificationSoundRef.current) {
-        notificationSoundRef.current.pause();
-        notificationSoundRef.current = null;
-      }
-    };
-  }, []);
+  const { playAudio } = useAudio('/notification-sound.mp3')
 
   useCustomerES({
     qrCode,
     sessionToken: status?.sessionToken,
     onMessage: (data) => {
       if (data.type === 'CALL') {
-        if (notificationSoundRef.current) {
-          notificationSoundRef.current.currentTime = 0;
-          notificationSoundRef.current.play()
-        }
+        playAudio()
       }
       return true
     }
