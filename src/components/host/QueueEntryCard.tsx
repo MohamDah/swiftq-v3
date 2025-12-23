@@ -36,24 +36,29 @@ export default function QueueEntryCard({ customer }: { customer: Customer }) {
         </div>
 
         <div className="flex gap-3 self-center justify-end flex-wrap max-w-40">
-          {(customer.status === 'WAITING' || customer.status === 'CALLED') && (
-            <button
-              onClick={() => callEntry({ entryId: customer.id })}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50"
-              disabled={isCalling}
-            >
-              {customer.status === 'CALLED' ? 'Notify Again' : 'Call'}
-            </button>
+          {customer.position === 1 && (
+            <>
+              {(customer.status === 'WAITING') && (
+                <button
+                  onClick={() => callEntry({ entryId: customer.id })}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50"
+                  disabled={isCalling}
+                >
+                  Call
+                </button>
+              )}
+              {customer.status === 'CALLED' && (
+                <button
+                  onClick={() => serveEntry({ entryId: customer.id })}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200 disabled:opacity-50"
+                  disabled={isServing}
+                >
+                  Serve
+                </button>
+              )}
+            </>
           )}
-          {customer.status === 'CALLED' && (
-            <button
-              onClick={() => serveEntry({ entryId: customer.id })}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-green-700 bg-green-100 hover:bg-green-200 disabled:opacity-50"
-              disabled={isServing}
-            >
-              Serve
-            </button>
-          )}
+
           {/* <button
             // onClick={() => handleRemoveCustomer(customer.id)}
             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-md shadow-black/25 text-red-700 bg-red-100 hover:bg-red-200"
