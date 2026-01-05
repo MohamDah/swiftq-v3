@@ -47,7 +47,7 @@ export function useSubscribeNotifs() {
     mutationFn: async (params: SubscribeNotificationParams) => {
       return subscribeWithRetry(params);
     },
-    retry: false, // We handle retries manually
+    retry: false,
     onError: (error: unknown) => {
       const apiError = error as ApiError;
       const status = apiError?.response?.status;

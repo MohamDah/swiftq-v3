@@ -28,6 +28,7 @@ export default function HostQueueDetails() {
 
     await deleteQueue({ id: queue.id })
     setConfirmDelete(false)
+    navigate('/my-queues')
   }
 
   const handleToggleActive = async () => {
