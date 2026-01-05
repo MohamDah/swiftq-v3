@@ -7,6 +7,7 @@ import ErrorComponent from '@/components/ErrorComponent';
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry';
 import { useCustomerES } from '@/hooks/useCustomerES';
 import { useAudio } from '@/hooks/useAudio';
+import { RequestNotifications } from '@/components/RequestNotifications';
 
 // /queue/:queueId/customer
 export default function CustomerView() {
@@ -106,6 +107,8 @@ export default function CustomerView() {
       <p className="mb-6 text-center font-medium">
         Host: {status.queue.businessName}
       </p>
+
+      <RequestNotifications status={status} />
 
       <div className='flex justify-center gap-6 mb-6'>
         {/* Customer Name if exists */}

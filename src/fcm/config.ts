@@ -1,6 +1,5 @@
 // src/firebase/config.ts
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getMessaging, isSupported, type Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
@@ -14,7 +13,6 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 export const getMessagingInstance = async (): Promise<Messaging | null> => {
   if (typeof window === "undefined") return null
@@ -30,5 +28,3 @@ export const getMessagingInstance = async (): Promise<Messaging | null> => {
     return null
   }
 }
-
-export { db };

@@ -73,6 +73,7 @@ export interface CustomerStatus {
   joinedAt: string;
   calledAt: string | null;
   peopleAhead: number;
+  hasNotifications: boolean;
   queue: {
     id: string;
     qrCode: string;

@@ -1,33 +1,28 @@
-// Import Firebase scripts
-importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Initialize Firebase
 firebase.initializeApp({
-  apiKey: "AIzaSyAgHGWoN_SEbQMH3wa7eZp8NfKQWdVXQaI",
-  authDomain: "foundations-swiftq.firebaseapp.com",
-  projectId: "foundations-swiftq",
-  storageBucket: "foundations-swiftq.firebasestorage.app",
-  messagingSenderId: "1011952216751",
-  appId: "1:1011952216751:web:123894d316950d1489c25a",
-  measurementId: "G-94XWJ2EMZQ"
+  apiKey: "AIzaSyCJi4JVE1CV6uqmMDiN8sIUMD6unMwJA_E",
+  authDomain: "swiftq-v3.firebaseapp.com",
+  projectId: "swiftq-v3",
+  storageBucket: "swiftq-v3.firebasestorage.app",
+  messagingSenderId: "351384299898",
+  appId: "1:351384299898:web:016f82b33b278479788ec3"
 });
 
 const messaging = firebase.messaging();
 
-// This function runs when a notification arrives and the app is closed/hidden
 messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message:', payload);
+  console.log('[firebase-messaging-sw.js] Received background message:', payload);
   
-  // Extract notification data
-  const notificationTitle = payload.data.title || 'SwiftQ Notification';
+  const notificationTitle = payload.data?.title || 'SwiftQ Notification';
   const notificationOptions = {
-    body: payload.data.body || 'You have a new notification from SwiftQ',
+    body: payload.data?.body || "It's your turn!",
     icon: '/swiftqIcon.png',
     badge: '/raysGreen.png',
-    tag: 'swiftq-queue-notification', // Prevents multiple notifications stacking
-    data: payload.data, // Custom data we can use later
-    actions: [ // These create buttons on the notification
+    tag: 'swiftq-queue-notification',
+    data: payload.data,
+    actions: [
       {
         action: 'view',
         title: 'View Queue'
@@ -37,37 +32,31 @@ messaging.onBackgroundMessage((payload) => {
         title: 'Dismiss'
       }
     ],
-    // requireInteraction: true // Notification stays until user acts
-    sound: "/notification-sound.mp3",
+    requireInteraction: true,
     renotify: true,
-    vibrate: true
+    vibrate: [200, 100, 200]
   };
 
-  // Show the notification
   self.registration.showNotification(notificationTitle, notificationOptions);
-  // prevent default
-  return true
+  
+  return true;
 });
 
-// Handle when user clicks on the notification
 self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event);
+  console.log('[firebase-messaging-sw.js] Notification clicked:', event);
   
-  // Close the notification
   event.notification.close();
   
-  // Handle different actions
   if (event.action === 'view' || event.action !== "dismiss") {
-    // Get the queue info from the notification data
-    const queueId = event.notification.data?.queueId;
-    const customerId = event.notification.data?.customerId;
-    const queueCode = event.notification.data?.queueCode;
+    const qrCode = event.notification.data?.qrCode;
     
-    if (queueId && customerId) {
-      // Open the queue page
-      const url = `https://swiftq-v2.netlify.app/queue/${queueCode}/customer/${customerId}`;
+    if (qrCode) {
+      const url = `${self.location.origin}/queue/${qrCode}/customer`;
       event.waitUntil(clients.openWindow(url));
     }
   }
-  // If action is 'dismiss' or no action, just close (already done above)
+});
+
+self.addEventListener('notificationclose', (event) => {
+  console.log('[firebase-messaging-sw.js] Notification was closed.', event);
 });
