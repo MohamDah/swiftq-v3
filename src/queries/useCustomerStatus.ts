@@ -16,6 +16,8 @@ export function useCustomerStatus(qrCode: string | null) {
       const { data } = await axiosInstance.get<CustomerStatus>(`queues/entry-status/${posToken}`)
       return data
     },
-    enabled: !!qrCode
+    enabled: !!qrCode,
+    gcTime: 0,
+    staleTime: 0
   })
 }
