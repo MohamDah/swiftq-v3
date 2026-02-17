@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import logoFull from "../assets/logoFull.png";
-import { MenuIcon, XIcon } from 'lucide-react';
+import { Loader2, MenuIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import JoinPopup from '../pages/_components/JoinPopup';
 import { useCurrentUser } from '@/queries/useCurrentUser';
@@ -32,7 +32,7 @@ export default function Layout() {
 
         {!showBurger
           ? null
-          : isLoading ? null : !isError
+          : isLoading ? <Loader2 className='animate-spin text-primary' /> : !isError
             ? <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25'>
               <MenuIcon />
             </button>
