@@ -1,174 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getAllCustomersForHost } from '../firebase/services/queues';
-import { Timestamp } from 'firebase/firestore';
 import { BarChart, BarChart2, PieChart } from 'lucide-react';
-
-interface Analytics {
-  peakHour: {
-    hour: number;
-    count: number;
-  };
-  averageWaitTime: number;
-  averageCustomers: number;
-  totalCustomers: number;
-  totalQueues: number;
-}
-
-type TimeFilter = 'today' | 'yesterday' | 'week' | 'month' | 'all';
+import { useAnalytics } from '@/queries/useAnalytics';
+import { TimeFilter } from '@/types/api';
 
 // /analytics
 export default function Analytics() {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [analytics, setAnalytics] = useState<Analytics>({
-    peakHour: { hour: 0, count: 0 },
-    averageWaitTime: 0,
-    averageCustomers: 0,
-    totalCustomers: 0,
-    totalQueues: 0
-  });
-  const [, setError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
-
-  useEffect(() => {
-    fetchAnalytics(timeFilter);
-  }, [timeFilter]);
-
-  async function fetchAnalytics(filter: TimeFilter) {
-    try {
-      setLoading(true);
-
-      // Fetch all customer data for all queues
-      const allCustomerData = await getAllCustomersForHost();
-      // const queues = await getHostQueues();
-
-      // Get start and end dates based on filter
-      const { startDate, endDate } = getDateRange(filter);
-
-      // Calculate analytics
-      const hourCounts: Record<number, number> = {};
-      let totalWaitTimeMinutes = 0;
-      let waitTimeCustomers = 0;
-      let totalCustomers = 0;
-      let filteredQueues = 0;
-
-      // Keep track of unique queues that have customers in the time range
-      const activeQueueIds = new Set<string>();
-
-      // Process each queue's customers
-      allCustomerData.forEach(queueData => {
-        let hasCustomersInRange = false;
-
-        queueData.customers.forEach(customer => {
-          if (!customer.data.joinedAt) return;
-
-          const joinDate = (customer.data.joinedAt as Timestamp).toDate();
-
-          // Skip if customer joined outside the selected date range
-          if ((startDate && joinDate < startDate) || (endDate && joinDate > endDate)) {
-            return;
-          }
-
-          hasCustomersInRange = true;
-          totalCustomers++;
-
-          // Count joinedAt hour for peak hour analysis
-          const hour = joinDate.getHours();
-          hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-
-          // Calculate wait time if applicable
-          if (customer.data.servedAt) {
-            const joinTime = joinDate.getTime();
-            const serveTime = (customer.data.servedAt as Timestamp).toDate().getTime();
-            const waitTimeMs = serveTime - joinTime;
-            const waitTimeMinutes = waitTimeMs / (1000 * 60);
-            totalWaitTimeMinutes += waitTimeMinutes;
-            waitTimeCustomers++;
-          }
-        });
-
-        // If this queue had customers in the selected time range, count it
-        if (hasCustomersInRange) {
-          activeQueueIds.add(queueData.queueId);
-        }
-      });
-
-      filteredQueues = activeQueueIds.size;
-
-      // Find peak hour
-      let peakHour = 0;
-      let peakCount = 0;
-      Object.entries(hourCounts).forEach(([hour, count]) => {
-        if (count > peakCount) {
-          peakHour = parseInt(hour);
-          peakCount = count;
-        }
-      });
-
-      // Calculate averages
-      const averageWaitTime = waitTimeCustomers > 0 ? totalWaitTimeMinutes / waitTimeCustomers : 0;
-      const averageCustomers = filteredQueues > 0 ? totalCustomers / filteredQueues : 0;
-
-      setAnalytics({
-        peakHour: {
-          hour: peakHour,
-          count: peakCount
-        },
-        averageWaitTime,
-        averageCustomers,
-        totalCustomers,
-        totalQueues: filteredQueues
-      });
-
-    } catch (err) {
-      console.error("Error fetching analytics:", err);
-      setError("Failed to load analytics data. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const getDateRange = (filter: TimeFilter): { startDate: Date | null; endDate: Date | null; } => {
-    const now = new Date();
-    let startDate: Date | null = null;
-    let endDate: Date | null = null;
-
-    switch (filter) {
-      case 'today':
-        startDate = new Date(now);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-
-      case 'yesterday':
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-
-        endDate = new Date(now);
-        endDate.setDate(endDate.getDate() - 1);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-
-      case 'week':
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-
-      case 'month':
-        startDate = new Date(now);
-        startDate.setMonth(startDate.getMonth() - 1);
-        break;
-
-      case 'all':
-      default:
-        startDate = null;
-        endDate = null;
-        break;
-    }
-
-    return { startDate, endDate };
-  };
+  const {data: analytics, isLoading, isError} = useAnalytics({filter: timeFilter})
 
   const formatHour = (hour: number) => {
     const period = hour >= 12 ? 'PM' : 'AM';
@@ -208,7 +46,7 @@ export default function Analytics() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading || !analytics ? (
         <div className="flex justify-center items-center min-h-[40vh]">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-700"></div>
         </div>
@@ -219,7 +57,7 @@ export default function Analytics() {
               <div className='absolute top-4 right-4'>
                 <BarChart className='size-10' />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Peak Hour</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2 md:text-sm lg:text-lg">Peak Hour</h2>
               <p className="text-3xl font-bold text-green-700">{
                 analytics.peakHour.count > 0
                   ? formatHour(analytics.peakHour.hour)
@@ -236,10 +74,10 @@ export default function Analytics() {
               <div className='absolute top-4 right-4'>
                 <PieChart className='size-10' />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Avg. Wait Time</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2 md:text-sm lg:text-lg">Avg. Wait Time</h2>
               <p className="text-3xl font-bold text-green-700">
                 {analytics.averageWaitTime > 0
-                  ? `${analytics.averageWaitTime.toFixed(1)} min`
+                  ? `${analytics.averageWaitTime} min`
                   : "N/A"}
               </p>
               <p className="text-sm text-gray-500 mt-1">
@@ -253,10 +91,10 @@ export default function Analytics() {
               <div className='absolute top-4 right-4'>
                 <BarChart2 className='size-10' />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Avg. No. Customers</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2 md:text-sm lg:text-lg">Avg. No. Customers</h2>
               <p className="text-3xl font-bold text-green-700">
                 {analytics.averageCustomers > 0
-                  ? analytics.averageCustomers.toFixed(1)
+                  ? analytics.averageCustomers
                   : "N/A"}
               </p>
               <p className="text-sm text-gray-500 mt-1">

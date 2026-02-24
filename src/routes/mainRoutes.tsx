@@ -11,6 +11,7 @@ import QR from "../pages/QR";
 import ProtectedRoute from "../components/ProtectedRoute";
 import HostQueues from "../pages/host-queues/HostQueues";
 import HostQueueDetails from "../pages/HostQueueDetails";
+import Analytics from "@/pages/Analytics";
 
 
 const mainRoutes = [
@@ -72,16 +73,14 @@ const mainRoutes = [
           </ProtectedRoute>
         ),
       },
-      //     {
-      //       path: "/analytics",
-      //       element: (
-      //         <ProtectedRoute>
-      //           <Analytics />
-      //         </ProtectedRoute>
-      //       ),
-      //     },
-
-
+          {
+            path: "/analytics",
+            element: (
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            ),
+          },
       //     // Auth Views
       {
         path: "/login",

@@ -89,3 +89,16 @@ export interface UpdateEntryDto {
 export interface CustomerEventDto {
   type: 'QUEUE_ADVANCED' | 'STATUS_CHANGE' | 'CALL';
 }
+
+export type TimeFilter = 'today' | 'yesterday' | 'week' | 'month' | 'all';
+export interface AnalyticsDto {
+  peakHour: {
+    hour: number;
+    count: number;
+  };
+  averageWaitTime: number;
+  averageCustomers: number;
+  totalCustomers: number;
+  totalQueues: number;
+}
+ 

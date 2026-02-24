@@ -4,5 +4,6 @@ export enum QueryKeys {
   HOST_QUEUE = 'host-queue',
   PUBLIC_QUEUE = 'public-queue',
   CUSTOMER_STATUS = 'customer-status',
-  EXISTING_POS = 'existing-position'
+  EXISTING_POS = 'existing-position',
+  ANALYTICS = 'analytics'
 }
