@@ -24,7 +24,7 @@ export default function JoinQueue() {
 
   // Check if user already has an active position
   useEffect(() => {
-    if (entryStatus?.hasEntry && entryStatus.entry) {
+    if (entryStatus?.hasEntry) {
       navigate(`/queue/${qrCode}/customer`, { replace: true });
     }
   }, [entryStatus, qrCode, navigate]);

@@ -33,9 +33,7 @@ export interface PublicQueueDetails {
   maxSize: number | null;
   averageServiceTime: number;
   requireNames: boolean;
-  estimatedWaitTime: number;
   currentSize: number;
-  isFull: boolean;
 }
 
 export interface HostQueueDetails extends Omit<QueueItem, '_count'> {
@@ -50,7 +48,6 @@ export interface Customer {
   customerName: string | null;
   displayNumber: string;
   status: QueueEntryStatus;
-  estimatedWaitTime: number | null;
   joinedAt: string;
   calledAt: string | null;
 }
@@ -59,7 +56,6 @@ export type CustomerSessions = Record<string, string | undefined>
 
 export interface ExistingPosResponse {
   hasEntry: boolean;
-  entry: Customer | null
 }
 
 export interface CustomerStatus {

@@ -13,7 +13,7 @@ export function useCustomerStatus(qrCode: string | null) {
       const posToken = getPositionToken(qrCode || '')
       if (!posToken) return navigate(`/join/${qrCode}`, { replace: true })
 
-      const { data } = await axiosInstance.get<CustomerStatus>(`queues/entry-status/${posToken}`)
+      const { data } = await axiosInstance.get<CustomerStatus>(`entries/${posToken}/status`)
       return data
     },
     enabled: !!qrCode,
