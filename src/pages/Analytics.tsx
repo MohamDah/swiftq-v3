@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BarChart, BarChart2, PieChart } from 'lucide-react';
 import { useAnalytics } from '@/queries/useAnalytics';
 import { TimeFilter } from '@/types/api';
@@ -45,10 +45,14 @@ export default function Analytics() {
           ))}
         </div>
       </div>
-
-      {isLoading || !analytics ? (
+      {isLoading ? (
         <div className="flex justify-center items-center min-h-[40vh]">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-700"></div>
+        </div>
+      ) : isError || !analytics ? (
+        <div className="flex flex-col justify-center items-center min-h-[40vh] gap-3 text-center px-6">
+          <p className="text-red-600 text-lg font-semibold">Failed to load analytics</p>
+          <p className="text-gray-500 text-sm">Something went wrong while fetching your data. Please try again later.</p>
         </div>
       ) : (
         <>
