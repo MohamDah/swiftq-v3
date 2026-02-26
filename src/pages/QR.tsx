@@ -1,43 +1,44 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { QRCodeSVG } from 'qrcode.react';
-import { CheckCircle2, Copy, Users } from 'lucide-react';
-import { displayError } from '@/utils/displayError';
-import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails';
-import { useHostES } from '@/hooks/useHostES';
+import { CheckCircle2, Copy, Users } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+
+import { useHostES } from '@/hooks/useHostES'
+import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails'
+import { displayError } from '@/utils/displayError'
 
 export default function QR() {
   // Get queueId from URL params
-  const { queueId } = useParams<{ queueId: string; }>();
-  const navigate = useNavigate();
+  const { queueId } = useParams<{ queueId: string }>()
+  const navigate = useNavigate()
   const { data: queue, isLoading, error } = useHostQueueDetailsQuery(queueId || '')
   useHostES({ queueId })
 
-  const [copied, setCopied] = useState(false);
-  const [codeCopied, setCodeCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
+  const [codeCopied, setCodeCopied] = useState(false)
 
-  const joinLink = `${window.location.origin}/join/${queueId}`
+  const joinLink = `${globalThis.location.origin}/join/${queueId}`
 
   // Copy join link to clipboard
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(joinLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+    navigator.clipboard.writeText(joinLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   // Copy queue code to clipboard
   const copyCode = () => {
-    navigator.clipboard.writeText(queue?.qrCode || "");
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
-  };
+    navigator.clipboard.writeText(queue?.qrCode || '')
+    setCodeCopied(true)
+    setTimeout(() => setCodeCopied(false), 2000)
+  }
 
   // Show error message if queue not found or fetch fails
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center">
         <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md text-center">
-          <div className="text-red-500 mb-4">{displayError(error) || "Queue not found"}</div>
+          <div className="text-red-500 mb-4">{displayError(error) || 'Queue not found'}</div>
           <button
             onClick={() => navigate(-1)}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
@@ -46,7 +47,7 @@ export default function QR() {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   // Show loading spinner while fetching data
@@ -58,7 +59,7 @@ export default function QR() {
           <p className="mt-4 text-gray-600">Loading QR code...</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Main QR code and queue info UI
@@ -75,23 +76,35 @@ export default function QR() {
             onClick={() => navigate(-1)}
             className="bg-primary p-2 rounded-full shadow-lg shadow-black/25"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <div className="bg-white mt-3.5 p-2.5 rounded-[30px] shadow-lg shadow-black/25 overflow-hidden">
-
           {/* Queue Info with Code and Status */}
           <div className="p-5 bg-primary/50 border-b rounded-[30px]">
             <div className="flex flex-col justify-between items-start">
-              <div className='flex items-center justify-between w-full flex-wrap'>
+              <div className="flex items-center justify-between w-full flex-wrap">
                 <div>
                   <h2 className="text-lg font-semibold">{queue.name}</h2>
                   <p className="text-sm">Host: {queue.host.businessName}</p>
                 </div>
-                <div className={`mt-2 text-sm inline-block px-4 py-1 rounded-lg border ${queue.isActive ? "bg-green-200 border-green-800" : "bg-red-200 border-red-800"}`}>
+                <div
+                  className={`mt-2 text-sm inline-block px-4 py-1 rounded-lg border ${queue.isActive ? 'bg-green-200 border-green-800' : 'bg-red-200 border-red-800'}`}
+                >
                   {queue.isActive ? 'Active' : 'Inactive'}
                 </div>
               </div>
@@ -99,7 +112,9 @@ export default function QR() {
               {/* Customer count indicator */}
               <div className="mt-4 w-full flex justify-center items-center gap-2 bg-white p-3 rounded-lg shadow-sm">
                 <Users size={20} className="text-primary" />
-                <span className="font-semibold">{queue.entries.length} {queue.entries.length === 1 ? 'person' : 'people'} in queue</span>
+                <span className="font-semibold">
+                  {queue.entries.length} {queue.entries.length === 1 ? 'person' : 'people'} in queue
+                </span>
               </div>
 
               <div className="text-center self-center mt-4 flex gap-3">
@@ -110,19 +125,21 @@ export default function QR() {
                   </div>
                 </div>
                 {/* Copy queue code button */}
-                <button onClick={copyCode} className="self-end mb-1.5 text-lg font-bold bg-white px-3 py-2 rounded-lg shadow-sm border-2 border-primary">
-                  {!codeCopied ?
+                <button
+                  onClick={copyCode}
+                  className="self-end mb-1.5 text-lg font-bold bg-white px-3 py-2 rounded-lg shadow-sm border-2 border-primary"
+                >
+                  {codeCopied ? (
+                    <CheckCircle2 className="text-white" fill="green" />
+                  ) : (
                     <Copy size={18} strokeWidth={2.5} />
-                    : <CheckCircle2 className='text-white' fill='green' />
-                  }
+                  )}
                 </button>
               </div>
             </div>
             {/* Feedback for code copy */}
             {codeCopied && (
-              <p className="mt-1 text-sm text-green-600 text-center">
-                Code copied to clipboard!
-              </p>
+              <p className="mt-1 text-sm text-green-600 text-center">Code copied to clipboard!</p>
             )}
           </div>
 
@@ -132,17 +149,15 @@ export default function QR() {
               <QRCodeSVG
                 value={joinLink}
                 size={200}
-                bgColor={"#ffffff"}
-                fgColor={"#000000"}
-                level={"H"}
+                bgColor={'#ffffff'}
+                fgColor={'#000000'}
+                level={'H'}
               />
             </div>
 
             {/* Join Link with copy button */}
             <div className="mt-8 w-full">
-              <label className="block font-semibold mb-1">
-                Join Link:
-              </label>
+              <label className="block font-semibold mb-1">Join Link:</label>
               <div className="flex rounded-md shadow-sm gap-2.5">
                 <input
                   type="text"
@@ -156,18 +171,14 @@ export default function QR() {
                   className={`inline-flex items-center px-3 py-2 border-2 border-primary rounded-md ${copied ? 'text-green-700' : 'text-gray-700'} hover:bg-gray-100`}
                 >
                   {copied ? (
-                    <CheckCircle2 className='text-white' fill='green' />
+                    <CheckCircle2 className="text-white" fill="green" />
                   ) : (
-                    <Copy size={18} strokeWidth={2.5} className='text-black' />
+                    <Copy size={18} strokeWidth={2.5} className="text-black" />
                   )}
                 </button>
               </div>
               {/* Feedback for link copy */}
-              {copied && (
-                <p className="mt-1 text-sm text-green-600">
-                  Link copied to clipboard!
-                </p>
-              )}
+              {copied && <p className="mt-1 text-sm text-green-600">Link copied to clipboard!</p>}
             </div>
           </div>
 
@@ -194,5 +205,5 @@ export default function QR() {
         </div>
       </div>
     </div>
-  );
+  )
 }

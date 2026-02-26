@@ -1,27 +1,33 @@
-import { CreateQueueProps, useCreateQueueMutation } from '@/queries/mutations/useCreateQueueMutation';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { displayError } from '@/utils/displayError';
+import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+
+import {
+  CreateQueueProps,
+  useCreateQueueMutation,
+} from '@/queries/mutations/useCreateQueueMutation'
+import { displayError } from '@/utils/displayError'
 
 // CreateQueue component - allows hosts to create new queues
 // Route: /create
 export default function CreateQueue() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const { mutateAsync: createQueue, error } = useCreateQueueMutation()
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<CreateQueueProps>({
-    defaultValues: { name: '', requireNames: false }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateQueueProps>({
+    defaultValues: { name: '', requireNames: false },
   })
 
   // Handle form submission
   const onSubmit = async ({ name, requireNames }: CreateQueueProps) => {
-    const queueId = await createQueue({ name, requireNames });
+    const queueId = await createQueue({ name, requireNames })
 
-    navigate(`/my-queues/${queueId.id}`);
-
-  };
+    navigate(`/my-queues/${queueId.id}`)
+  }
 
   return (
-
     <div className="max-w-md mx-auto bg-white rounded-[40px] shadow-lg shadow-black/25 overflow-hidden">
       <div className="md:flex">
         <div className="p-8 w-full">
@@ -68,7 +74,9 @@ export default function CreateQueue() {
                 <label htmlFor="requireNames" className="font-semibold">
                   Require customer names
                 </label>
-                <p className="text-gray-500 text-xs">When enabled, customers will need to provide their name to join the queue</p>
+                <p className="text-gray-500 text-xs">
+                  When enabled, customers will need to provide their name to join the queue
+                </p>
               </div>
             </div>
 
@@ -83,8 +91,9 @@ export default function CreateQueue() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`flex-1 py-1 px-4 border border-transparent rounded-xl shadow-lg shadow-black/25 text-sm font-semibold bg-primary hover:bg-primary-sat  ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                className={`flex-1 py-1 px-4 border border-transparent rounded-xl shadow-lg shadow-black/25 text-sm font-semibold bg-primary hover:bg-primary-sat  ${
+                  isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
               >
                 {isSubmitting ? 'Creating...' : 'Create Queue'}
               </button>
@@ -93,5 +102,5 @@ export default function CreateQueue() {
         </div>
       </div>
     </div>
-  );
+  )
 }

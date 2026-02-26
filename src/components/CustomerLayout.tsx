@@ -1,11 +1,11 @@
-import rays from "../assets/rays.png";
-import logoBanner from "../assets/logoBanner.png";
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom'
+
+import logoBanner from '../assets/logoBanner.png'
+import rays from '../assets/rays.png'
 
 export default function CustomerLayout() {
   return (
     <div className="h-dvh absolute top-0 left-0 pt-8 w-full bg-primary flex flex-col justify-start items-center overflow-y-scroll">
-
       <img src={rays} alt="Rays" className="w-40" />
 
       <div className="mx-5 space-y-6">
@@ -14,5 +14,5 @@ export default function CustomerLayout() {
       </div>
       <img src={rays} alt="Rays" className="w-40 rotate-180" />
     </div>
-  );
+  )
 }

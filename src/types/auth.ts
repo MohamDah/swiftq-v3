@@ -1,4 +1,3 @@
-
 export interface User {
   id: string
   email: string
@@ -11,7 +10,7 @@ export interface LoginProps {
 }
 
 export interface LoginResponse {
-  accessToken: string,
+  accessToken: string
 }
 
 export interface SignupProps {
@@ -21,7 +20,6 @@ export interface SignupProps {
 }
 
 export interface SignupResponse {
-  accessToken: string,
+  accessToken: string
   user: User
 }
-

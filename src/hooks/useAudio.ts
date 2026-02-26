@@ -1,21 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react'
 
 export function useAudio(path = '/notification-sound.mp3') {
-  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
+  const notificationSoundRef = useRef<HTMLAudioElement | null>(null)
   useEffect(() => {
-    notificationSoundRef.current = new Audio(path);
+    notificationSoundRef.current = new Audio(path)
     return () => {
       // Cleanup if needed
       if (notificationSoundRef.current) {
-        notificationSoundRef.current.pause();
-        notificationSoundRef.current = null;
+        notificationSoundRef.current.pause()
+        notificationSoundRef.current = null
       }
-    };
-  }, [path]);
+    }
+  }, [path])
 
   function playAudio() {
     if (notificationSoundRef.current) {
-      notificationSoundRef.current.currentTime = 0;
+      notificationSoundRef.current.currentTime = 0
       notificationSoundRef.current.play()
     }
   }

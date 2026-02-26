@@ -1,11 +1,11 @@
-export type NotificationPermissionStatus = 'granted' | 'denied' | 'default';
+export type NotificationPermissionStatus = 'granted' | 'denied' | 'default'
 
 export interface NotificationState {
-  permission: NotificationPermissionStatus;
-  isSupported: boolean;
-  fcmToken: string | null;
-  isLoading: boolean;
-  error: NotificationError | null;
+  permission: NotificationPermissionStatus
+  isSupported: boolean
+  fcmToken: string | null
+  isLoading: boolean
+  error: NotificationError | null
 }
 
 export type NotificationErrorType =
@@ -14,20 +14,20 @@ export type NotificationErrorType =
   | 'token-retrieval-failed'
   | 'sw-registration-failed'
   | 'network-error'
-  | 'unknown';
+  | 'unknown'
 
 export interface NotificationError {
-  type: NotificationErrorType;
-  message: string;
-  originalError?: unknown;
+  type: NotificationErrorType
+  message: string
+  originalError?: unknown
 }
 
 export interface SubscribeNotificationParams {
-  entryId: string;
-  fcmToken: string;
+  entryId: string
+  fcmToken: string
 }
 
 export interface ServiceWorkerRegistrationOptions {
-  maxRetries?: number;
-  retryDelay?: number;
+  maxRetries?: number
+  retryDelay?: number
 }

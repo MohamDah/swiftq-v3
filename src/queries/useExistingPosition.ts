@@ -1,8 +1,10 @@
-import { getPositionToken } from "@/utils/customerStorage";
-import { useQuery } from "@tanstack/react-query";
-import { QueryKeys } from "./queryKeys";
-import axiosInstance from "@/api/axiosInstance";
-import { ExistingPosResponse } from "@/types/api";
+import { useQuery } from '@tanstack/react-query'
+
+import axiosInstance from '@/api/axiosInstance'
+import { ExistingPosResponse } from '@/types/api'
+import { getPositionToken } from '@/utils/customerStorage'
+
+import { QueryKeys } from './queryKeys'
 
 export function useExistingPositionQuery(qrCode = '') {
   const sessionId = getPositionToken(qrCode)
@@ -10,12 +12,12 @@ export function useExistingPositionQuery(qrCode = '') {
     queryKey: [QueryKeys.EXISTING_POS, qrCode],
     queryFn: async () => {
       const { data } = await axiosInstance.get<ExistingPosResponse>(
-        `queues/${qrCode}/check-entry?token=${sessionId}`
+        `queues/${qrCode}/check-entry?token=${sessionId}`,
       )
       return data
     },
     enabled: !!qrCode && !!sessionId,
     gcTime: 0,
-    staleTime: 0
+    staleTime: 0,
   })
 }

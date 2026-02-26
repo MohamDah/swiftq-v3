@@ -1,15 +1,16 @@
 import React from 'react'
-import { displayError } from '@/utils/displayError';
+
+import { displayError } from '@/utils/displayError'
 
 interface ErrorComponentProps {
-  error?: Error;
-  title?: string;
-  message?: string;
-  onRetry?: () => void;
-  onGoBack?: () => void;
-  retryText?: string;
-  goBackText?: string;
-  fullScreen?: boolean;
+  error?: Error
+  title?: string
+  message?: string
+  onRetry?: () => void
+  onGoBack?: () => void
+  retryText?: string
+  goBackText?: string
+  fullScreen?: boolean
 }
 
 export default function ErrorComponent({
@@ -20,39 +21,36 @@ export default function ErrorComponent({
   onGoBack,
   retryText = 'Try Again',
   goBackText = 'Go Back',
-  fullScreen = false
+  fullScreen = false,
 }: ErrorComponentProps) {
-  const errorMessage = message || (error && displayError(error)) || 'An unexpected error occurred. Please try again.';
+  const errorMessage =
+    message || (error && displayError(error)) || 'An unexpected error occurred. Please try again.'
 
   const content = (
     <div className="bg-white rounded-xl shadow-md p-6 max-w-md w-full mx-auto">
       <div className="flex flex-col items-center text-center">
         {/* Error Icon */}
         <div className="rounded-full bg-red-100 p-3 mb-4">
-          <svg 
-            className="h-12 w-12 text-red-600" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="h-12 w-12 text-red-600"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         </div>
 
         {/* Error Title */}
-        <h2 className="text-xl font-bold text-red-600 mb-2">
-          {title}
-        </h2>
+        <h2 className="text-xl font-bold text-red-600 mb-2">{title}</h2>
 
         {/* Error Message */}
-        <p className="text-gray-600 mb-6">
-          {errorMessage}
-        </p>
+        <p className="text-gray-600 mb-6">{errorMessage}</p>
 
         {/* Action Buttons */}
         <div className="flex gap-3 w-full">
@@ -75,15 +73,13 @@ export default function ErrorComponent({
         </div>
       </div>
     </div>
-  );
+  )
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
-        {content}
-      </div>
-    );
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">{content}</div>
+    )
   }
 
-  return content;
+  return content
 }

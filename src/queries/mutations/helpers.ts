@@ -1,5 +1,6 @@
-import { QueryClient } from "@tanstack/react-query";
-import { QueryKeys } from "../queryKeys";
+import { QueryClient } from '@tanstack/react-query'
+
+import { QueryKeys } from '../queryKeys'
 
 export function invalidateEntryQueries(queryClient: QueryClient) {
   return Promise.all([

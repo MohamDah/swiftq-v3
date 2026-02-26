@@ -1,8 +1,10 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useEventSource } from "./useEventSource";
-import { useEffect, useMemo } from "react";
-import { QueryKeys } from "@/queries/queryKeys";
-import { getAuthToken } from "@/utils/auth";
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo } from 'react'
+
+import { QueryKeys } from '@/queries/queryKeys'
+import { getAuthToken } from '@/utils/auth'
+
+import { useEventSource } from './useEventSource'
 
 export function useHostES({ queueId }: { queueId?: string }) {
   const token = useMemo(() => getAuthToken(), [])

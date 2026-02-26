@@ -1,127 +1,128 @@
-import { getToken, onMessage, type Messaging } from 'firebase/messaging';
-import { getMessagingInstance } from '../fcm/config';
+import { getToken, type Messaging, onMessage } from 'firebase/messaging'
+
+import { getMessagingInstance } from '../fcm/config'
 import type {
   NotificationError,
   NotificationState,
   ServiceWorkerRegistrationOptions,
-} from '../types/notifications';
+} from '../types/notifications'
 
-const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-const SW_PATH = '/firebase-messaging-sw.js';
-const SW_SCOPE = '/';
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
+const SW_PATH = '/firebase-messaging-sw.js'
+const SW_SCOPE = '/'
 
 class NotificationService {
-  private swRegistration: ServiceWorkerRegistration | null = null;
-  private fcmToken: string | null = null;
-  private listeners: Set<(state: NotificationState) => void> = new Set();
+  private swRegistration: ServiceWorkerRegistration | null = null
+  private fcmToken: string | null = null
+  private listeners: Set<(state: NotificationState) => void> = new Set()
   private state: NotificationState = {
     permission: 'default',
     isSupported: false,
     fcmToken: null,
     isLoading: false,
     error: null,
-  };
+  }
 
   constructor() {
-    this.initializeState();
+    this.initializeState()
   }
 
   private async initializeState() {
-    this.state.isSupported = await this.checkSupport();
-    this.state.permission = this.getPermissionStatus();
-    this.notifyListeners();
+    this.state.isSupported = await this.checkSupport()
+    this.state.permission = this.getPermissionStatus()
+    this.notifyListeners()
   }
 
   private async checkSupport(): Promise<boolean> {
-    if (typeof window === 'undefined') return false;
-    if (!('serviceWorker' in navigator)) return false;
-    if (!('Notification' in window)) return false;
-    if (!('PushManager' in window)) return false;
+    if (globalThis.window === undefined) return false
+    if (!('serviceWorker' in navigator)) return false
+    if (!('Notification' in globalThis)) return false
+    if (!('PushManager' in globalThis)) return false
 
     try {
-      const messaging = await getMessagingInstance();
-      return messaging !== null;
+      const messaging = await getMessagingInstance()
+      return messaging !== null
     } catch {
-      return false;
+      return false
     }
   }
 
   private getPermissionStatus(): NotificationPermission {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
-      return 'default';
+    if (globalThis.window === undefined || !('Notification' in globalThis)) {
+      return 'default'
     }
-    return Notification.permission;
+    return Notification.permission
   }
 
   private notifyListeners() {
-    this.listeners.forEach((listener) => listener({ ...this.state }));
+    for (const listener of this.listeners) listener({ ...this.state })
   }
 
   private updateState(updates: Partial<NotificationState>) {
-    this.state = { ...this.state, ...updates };
-    this.notifyListeners();
+    this.state = { ...this.state, ...updates }
+    this.notifyListeners()
   }
 
   private createError(
     type: NotificationError['type'],
     message: string,
-    originalError?: unknown
+    originalError?: unknown,
   ): NotificationError {
-    return { type, message, originalError };
+    return { type, message, originalError }
   }
 
   private async sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
    * Register the service worker with retry logic
    */
   async registerServiceWorker(
-    options: ServiceWorkerRegistrationOptions = {}
+    options: ServiceWorkerRegistrationOptions = {},
   ): Promise<ServiceWorkerRegistration | null> {
-    const { maxRetries = 3, retryDelay = 1000 } = options;
+    const { maxRetries = 3, retryDelay = 1000 } = options
 
     if (!this.state.isSupported) {
-      console.warn('Service workers not supported');
-      return null;
+      console.warn('Service workers not supported')
+      return null
     }
 
     // Check for existing registration
     try {
-      const existingReg = await navigator.serviceWorker.getRegistration(SW_PATH);
+      const existingReg = await navigator.serviceWorker.getRegistration(SW_PATH)
       if (existingReg) {
-        console.log('Found existing service worker registration');
-        this.swRegistration = existingReg;
-        return existingReg;
+        console.info('Found existing service worker registration')
+        this.swRegistration = existingReg
+        return existingReg
       }
     } catch (error) {
-      console.error('Error checking for existing registration:', error);
+      console.error('Error checking for existing registration:', error)
     }
 
     // Register new service worker with retry
-    let lastError: unknown;
+    let lastError: unknown
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Registering service worker (attempt ${attempt}/${maxRetries})`);
+        console.info(`Registering service worker (attempt ${attempt}/${maxRetries})`)
         const registration = await navigator.serviceWorker.register(SW_PATH, {
           scope: SW_SCOPE,
-        });
+        })
 
         // Wait for activation if needed
-        await this.waitForActivation(registration);
+        await this.waitForActivation(registration)
 
-        console.log('Service worker registered and activated successfully');
-        this.swRegistration = registration;
-        return registration;
+        console.info('Service worker registered and activated successfully')
+        this.swRegistration = registration
+        return registration
       } catch (error) {
-        lastError = error;
-        console.error(`Service worker registration attempt ${attempt} failed:`, error);
+        lastError = error
+        console.error(`Service worker registration attempt ${attempt} failed:`, error)
 
         if (attempt < maxRetries) {
-          const delay = retryDelay * attempt; // Exponential backoff
-          console.log(`Retrying in ${delay}ms...`);
-          await this.sleep(delay);
+          const delay = retryDelay * attempt // Exponential backoff
+          console.info(`Retrying in ${delay}ms...`)
+          await this.sleep(delay)
         }
       }
     }
@@ -129,44 +130,42 @@ class NotificationService {
     const errorObj = this.createError(
       'sw-registration-failed',
       'Failed to register service worker after multiple attempts',
-      lastError
-    );
-    this.updateState({ error: errorObj });
-    return null;
+      lastError,
+    )
+    this.updateState({ error: errorObj })
+    return null
   }
 
   /**
    * Wait for service worker to reach activated state
    */
-  private async waitForActivation(
-    registration: ServiceWorkerRegistration
-  ): Promise<void> {
-    const sw = registration.installing || registration.waiting || registration.active;
+  private async waitForActivation(registration: ServiceWorkerRegistration): Promise<void> {
+    const sw = registration.installing || registration.waiting || registration.active
     if (!sw) {
-      throw new Error('No service worker found in registration');
+      throw new Error('No service worker found in registration')
     }
 
     if (sw.state === 'activated') {
-      return;
+      return
     }
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error('Service worker activation timeout'));
-      }, 10000);
+        reject(new Error('Service worker activation timeout'))
+      }, 10_000)
 
       sw.addEventListener('statechange', function handler() {
         if (sw.state === 'activated') {
-          clearTimeout(timeout);
-          sw.removeEventListener('statechange', handler);
-          resolve();
+          clearTimeout(timeout)
+          sw.removeEventListener('statechange', handler)
+          resolve()
         } else if (sw.state === 'redundant') {
-          clearTimeout(timeout);
-          sw.removeEventListener('statechange', handler);
-          reject(new Error('Service worker became redundant'));
+          clearTimeout(timeout)
+          sw.removeEventListener('statechange', handler)
+          reject(new Error('Service worker became redundant'))
         }
-      });
-    });
+      })
+    })
   }
 
   /**
@@ -176,35 +175,35 @@ class NotificationService {
     if (!this.state.isSupported) {
       const error = this.createError(
         'not-supported',
-        'Notifications are not supported in this browser'
-      );
-      this.updateState({ error });
-      throw error;
+        'Notifications are not supported in this browser',
+      )
+      this.updateState({ error })
+      throw error
     }
 
-    this.updateState({ isLoading: true, error: null });
+    this.updateState({ isLoading: true, error: null })
 
     try {
-      const permission = await Notification.requestPermission();
-      this.updateState({ permission, isLoading: false });
+      const permission = await Notification.requestPermission()
+      this.updateState({ permission, isLoading: false })
 
       if (permission === 'denied') {
         const error = this.createError(
           'permission-denied',
-          'Notification permission was denied. Please enable notifications in your browser settings.'
-        );
-        this.updateState({ error });
+          'Notification permission was denied. Please enable notifications in your browser settings.',
+        )
+        this.updateState({ error })
       }
 
-      return permission;
+      return permission
     } catch (error) {
       const errorObj = this.createError(
         'unknown',
         'Failed to request notification permission',
-        error
-      );
-      this.updateState({ error: errorObj, isLoading: false });
-      throw errorObj;
+        error,
+      )
+      this.updateState({ error: errorObj, isLoading: false })
+      throw errorObj
     }
   }
 
@@ -213,65 +212,65 @@ class NotificationService {
    */
   async getToken(forceRefresh = false): Promise<string | null> {
     if (this.fcmToken && !forceRefresh) {
-      return this.fcmToken;
+      return this.fcmToken
     }
 
     if (!this.state.isSupported) {
-      const error = this.createError('not-supported', 'FCM is not supported');
-      this.updateState({ error });
-      return null;
+      const error = this.createError('not-supported', 'FCM is not supported')
+      this.updateState({ error })
+      return null
     }
 
     if (this.state.permission !== 'granted') {
       const error = this.createError(
         'permission-denied',
-        'Notification permission must be granted before getting token'
-      );
-      this.updateState({ error });
-      return null;
+        'Notification permission must be granted before getting token',
+      )
+      this.updateState({ error })
+      return null
     }
 
-    this.updateState({ isLoading: true, error: null });
+    this.updateState({ isLoading: true, error: null })
 
     try {
       // Ensure service worker is registered
       if (!this.swRegistration) {
-        this.swRegistration = await this.registerServiceWorker();
+        this.swRegistration = await this.registerServiceWorker()
         if (!this.swRegistration) {
-          throw new Error('Service worker registration failed');
+          throw new Error('Service worker registration failed')
         }
       }
 
-      const messaging = await getMessagingInstance();
+      const messaging = await getMessagingInstance()
       if (!messaging) {
-        throw new Error('Firebase messaging not available');
+        throw new Error('Firebase messaging not available')
       }
 
       const token = await getToken(messaging, {
         vapidKey: VAPID_KEY,
         serviceWorkerRegistration: this.swRegistration,
-      });
+      })
 
       if (!token) {
-        throw new Error('No FCM token received');
+        throw new Error('No FCM token received')
       }
 
-      this.fcmToken = token;
-      this.updateState({ fcmToken: token, isLoading: false });
+      this.fcmToken = token
+      this.updateState({ fcmToken: token, isLoading: false })
 
       // Set up token refresh listener
-      this.setupTokenRefreshListener(messaging);
+      this.setupTokenRefreshListener(messaging)
 
-      return token;
+      return token
     } catch (error) {
-      console.error('Error getting FCM token:', error);
+      console.error('Error getting FCM token:', error)
       const errorObj = this.createError(
         'token-retrieval-failed',
         'Failed to retrieve FCM token. Please try again.',
-        error
-      );
-      this.updateState({ error: errorObj, isLoading: false, fcmToken: null });
-      return null;
+        error,
+      )
+      this.updateState({ error: errorObj, isLoading: false, fcmToken: null })
+      return null
     }
   }
 
@@ -280,12 +279,12 @@ class NotificationService {
    */
   private setupTokenRefreshListener(messaging: Messaging) {
     try {
-      onMessage(messaging, (payload) => {
-        console.log('Foreground message received:', payload);
+      onMessage(messaging, payload => {
+        console.info('Foreground message received:', payload)
         // Handle foreground messages if needed
-      });
+      })
     } catch (error) {
-      console.error('Error setting up message listener:', error);
+      console.error('Error setting up message listener:', error)
     }
   }
 
@@ -296,25 +295,25 @@ class NotificationService {
     try {
       // Check if already granted
       if (this.state.permission === 'granted' && this.fcmToken) {
-        return this.fcmToken;
+        return this.fcmToken
       }
 
       // Register service worker first (non-blocking)
       if (!this.swRegistration) {
-        this.swRegistration = await this.registerServiceWorker();
+        this.swRegistration = await this.registerServiceWorker()
       }
 
       // Request permission
-      const permission = await this.requestPermission();
+      const permission = await this.requestPermission()
       if (permission !== 'granted') {
-        return null;
+        return null
       }
 
       // Get token
-      return await this.getToken();
+      return await this.getToken()
     } catch (error) {
-      console.error('Error initializing notifications:', error);
-      return null;
+      console.error('Error initializing notifications:', error)
+      return null
     }
   }
 
@@ -322,65 +321,63 @@ class NotificationService {
    * Subscribe to state changes
    */
   subscribe(listener: (state: NotificationState) => void): () => void {
-    this.listeners.add(listener);
+    this.listeners.add(listener)
     // Immediately notify with current state
-    listener({ ...this.state });
+    listener({ ...this.state })
 
     // Return unsubscribe function
     return () => {
-      this.listeners.delete(listener);
-    };
+      this.listeners.delete(listener)
+    }
   }
 
   /**
    * Get current state
    */
   getState(): NotificationState {
-    return { ...this.state };
+    return { ...this.state }
   }
 
   /**
    * Clear error state
    */
   clearError() {
-    this.updateState({ error: null });
+    this.updateState({ error: null })
   }
 
   /**
    * Reset state (useful for testing)
    */
   reset() {
-    this.fcmToken = null;
-    this.swRegistration = null;
+    this.fcmToken = null
+    this.swRegistration = null
     this.updateState({
       fcmToken: null,
       error: null,
       isLoading: false,
-    });
+    })
   }
 
   /**
    * Check if service worker is healthy
    */
   async checkServiceWorkerHealth(): Promise<boolean> {
-    if (!this.swRegistration) return false;
+    if (!this.swRegistration) return false
 
     try {
       const sw =
-        this.swRegistration.active ||
-        this.swRegistration.waiting ||
-        this.swRegistration.installing;
+        this.swRegistration.active || this.swRegistration.waiting || this.swRegistration.installing
 
-      if (!sw) return false;
-      if (sw.state === 'redundant') return false;
+      if (!sw) return false
+      if (sw.state === 'redundant') return false
 
-      return sw.state === 'activated' || sw.state === 'activating';
+      return sw.state === 'activated' || sw.state === 'activating'
     } catch {
-      return false;
+      return false
     }
   }
 }
 
 // Export singleton instance
-export const notificationService = new NotificationService();
-export default notificationService;
+export const notificationService = new NotificationService()
+export default notificationService

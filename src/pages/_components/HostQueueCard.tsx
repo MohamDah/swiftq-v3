@@ -1,9 +1,10 @@
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+
 import ConfirmationModal from '@/components/modals/Confirmation'
 import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue'
 import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue'
 import { QueueItem } from '@/types/api'
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
 
 export default function HostQueueCard({ queue }: { queue: QueueItem }) {
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
@@ -19,7 +20,7 @@ export default function HostQueueCard({ queue }: { queue: QueueItem }) {
   const handleToggleActive = async () => {
     await updateQueue({
       queueId: queue.id,
-      isActive: !queue.isActive
+      isActive: !queue.isActive,
     })
   }
 
@@ -35,7 +36,7 @@ export default function HostQueueCard({ queue }: { queue: QueueItem }) {
               <h3 className="text-lg font-medium text-gray-900 break-words">{queue.name}</h3>
               <p className="text-sm text-gray-500">
                 Created {new Date(queue.createdAt).toLocaleDateString()} •
-                {queue.requireNames ? " Names required" : " Names not required"}
+                {queue.requireNames ? ' Names required' : ' Names not required'}
               </p>
             </div>
           </div>
@@ -57,25 +58,25 @@ export default function HostQueueCard({ queue }: { queue: QueueItem }) {
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-500 bg-red-300 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-200 disabled:border-transparent"
               onClick={handleToggleActive}
             >
-              {isUpdating ? "Toggling" : queue.isActive ? "Deactivate" : "Activate"}
+              {isUpdating ? 'Toggling' : queue.isActive ? 'Deactivate' : 'Activate'}
             </button>
             <button
               disabled={isDeleting}
               onClick={() => setConfirmDelete(true)}
               className="inline-flex items-center px-3 py-1 border-2 text-xs font-medium rounded-lg border-red-700 bg-red-400 hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 disabled:bg-red-300 disabled:border-transparent"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </button>
           </div>
         </div>
       </div>
       <ConfirmationModal
-        variant='danger'
+        variant="danger"
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         onConfirm={handleDelete}
-        confirmText='Delete'
-        title='Delete Queue'
+        confirmText="Delete"
+        title="Delete Queue"
         message={`Are you sure you want to delete "${queue.name}"? This action is unreversible!`}
         isLoading={isDeleting}
       />

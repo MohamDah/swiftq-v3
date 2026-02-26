@@ -1,19 +1,20 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { formatDistance } from 'date-fns';
-import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails';
-import QueueEntryCard from '@/components/host/QueueEntryCard';
-import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue';
-import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue';
-import { useState } from 'react';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import ErrorComponent from '@/components/ErrorComponent';
-import ConfirmationModal from '@/components/modals/Confirmation';
-import { useHostES } from '@/hooks/useHostES';
+import { formatDistance } from 'date-fns'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+
+import ErrorComponent from '@/components/ErrorComponent'
+import QueueEntryCard from '@/components/host/QueueEntryCard'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import ConfirmationModal from '@/components/modals/Confirmation'
+import { useHostES } from '@/hooks/useHostES'
+import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue'
+import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue'
+import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails'
 
 // /my-queues/:queueId
 export default function HostQueueDetails() {
-  const { queueId = "" } = useParams<{ queueId: string; }>();
-  const navigate = useNavigate();
+  const { queueId = '' } = useParams<{ queueId: string }>()
+  const navigate = useNavigate()
   const { data: queue, isLoading, error } = useHostQueueDetailsQuery(queueId)
 
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
@@ -36,20 +37,20 @@ export default function HostQueueDetails() {
 
     await updateQueue({
       queueId: queue.id,
-      isActive: !queue.isActive
+      isActive: !queue.isActive,
     })
   }
 
   // Generate shareable join link
   const getJoinLink = () => {
     if (!queue) return ''
-    return `${window.location.origin}/join/${queue.qrCode}`;
-  };
+    return `${globalThis.location.origin}/join/${queue.qrCode}`
+  }
 
   // Copy join link to clipboard
   const copyJoinLink = () => {
-    navigator.clipboard.writeText(getJoinLink());
-  };
+    navigator.clipboard.writeText(getJoinLink())
+  }
 
   if (error) {
     return (
@@ -58,15 +59,15 @@ export default function HostQueueDetails() {
         title="Error Loading Queue"
         message="Queue not found or you don't have access"
         onGoBack={() => navigate('/my-queues')}
-        onRetry={() => window.location.reload()}
+        onRetry={() => globalThis.location.reload()}
         goBackText="Back to My Queues"
         fullScreen
       />
-    );
+    )
   }
 
   if (isLoading || !queue) {
-    return <LoadingSpinner fullScreen />;
+    return <LoadingSpinner fullScreen />
   }
 
   return (
@@ -78,10 +79,15 @@ export default function HostQueueDetails() {
           <div className="bg-white rounded-2xl overflow-hidden mb-6 shadow-md shadow-black/25">
             <div className="m-4 p-4 bg-primary/60 rounded-2xl">
               <div className="flex flex-col md:flex-row gap-2 flex-wrap md:items-center justify-between">
-                <div className='min-w-fit'>
+                <div className="min-w-fit">
                   <div className="flex items-center">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium border-2 ${queue.isActive ? 'bg-green-200 text-green-800 border-green-500' : 'bg-red-200 text-red-800 border-red-500'
-                      }`}>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium border-2 ${
+                        queue.isActive
+                          ? 'bg-green-200 text-green-800 border-green-500'
+                          : 'bg-red-200 text-red-800 border-red-500'
+                      }`}
+                    >
                       {queue.isActive ? 'Active' : 'Inactive'}
                     </span>
                     <span className="ml-2 font-medium">{queue.entries.length} in queue</span>
@@ -89,18 +95,17 @@ export default function HostQueueDetails() {
                   <p className="mt-2 text-sm">
                     Created: {new Date(queue.createdAt).toLocaleDateString()}
                   </p>
-                  <p className="text-sm">
-                    Names required: {queue.requireNames ? 'Yes' : 'No'}
-                  </p>
+                  <p className="text-sm">Names required: {queue.requireNames ? 'Yes' : 'No'}</p>
                 </div>
                 <div className="mt-4 md:mt-0 flex gap-4 flex-wrap justify-center text-xs *:shadow-lg *:shadow-black/25">
                   <button
                     onClick={handleToggleActive}
                     disabled={isUpdating}
-                    className={`px-3 py-2 text-white rounded-md disabled:opacity-50 ${queue.isActive
-                      ? 'bg-red-600 hover:bg-red-700'
-                      : 'bg-green-600 hover:bg-green-700'
-                      }`}
+                    className={`px-3 py-2 text-white rounded-md disabled:opacity-50 ${
+                      queue.isActive
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
                   >
                     {queue.isActive ? 'Deactivate Queue' : 'Activate Queue'}
                   </button>
@@ -111,7 +116,7 @@ export default function HostQueueDetails() {
                     Copy Join Link
                   </button>
                   <Link
-                    target='_blank'
+                    target="_blank"
                     to={`/qr/${queue.id}`}
                     className="px-3 py-2 bg-primary-sat rounded-md hover:bg-primary disabled:opacity-50"
                   >
@@ -145,8 +150,8 @@ export default function HostQueueDetails() {
             <div className="bg-primary/60 rounded-lg shadow-md p-4">
               <h3 className=" font-semibold text-gray-900">Est. Total Time</h3>
               <p className="text-2xl font-bold text-green-700 mt-2">
-                {queue.averageServiceTime && queue.entries.length
-                  ? `${formatDistance(new Date(Date.now() - (queue.averageServiceTime * queue.entries.length)), new Date())}`
+                {queue.averageServiceTime && queue.entries.length > 0
+                  ? `${formatDistance(new Date(Date.now() - queue.averageServiceTime * queue.entries.length), new Date())}`
                   : 'N/A'}
               </p>
             </div>
@@ -168,7 +173,7 @@ export default function HostQueueDetails() {
             </div>
           ) : (
             <div className="space-y-4 my-3">
-              {queue.entries.map((customer) => (
+              {queue.entries.map(customer => (
                 <QueueEntryCard key={customer.id} customer={customer} />
               ))}
             </div>
@@ -188,5 +193,5 @@ export default function HostQueueDetails() {
         isLoading={isDeleting}
       />
     </div>
-  );
+  )
 }

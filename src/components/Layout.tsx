@@ -1,25 +1,27 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import logoFull from "../assets/logoFull.png";
-import { Loader2, MenuIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
-import JoinPopup from '../pages/_components/JoinPopup';
-import { useCurrentUser } from '@/queries/useCurrentUser';
-import { useLogoutMutation } from '@/queries/mutations/useLogoutMutation';
+import { Loader2, MenuIcon, XIcon } from 'lucide-react'
+import { useState } from 'react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 
+import { useLogoutMutation } from '@/queries/mutations/useLogoutMutation'
+import { useCurrentUser } from '@/queries/useCurrentUser'
+
+import logoFull from '../assets/logoFull.png'
+import JoinPopup from '../pages/_components/JoinPopup'
 
 export default function Layout() {
-  const {data: currentUser, isLoading, isError} = useCurrentUser();
-  const {mutate: logout} = useLogoutMutation()
+  const { data: currentUser, isLoading, isError } = useCurrentUser()
+  const { mutate: logout } = useLogoutMutation()
 
-  const [showModal, setShowModal] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
-  const pathname = useLocation().pathname;
-  const showBurger = !["/register", "/login", "/join", "/customer/"].some(route => pathname.includes(route));
+  const [showModal, setShowModal] = useState(false)
+  const [showJoin, setShowJoin] = useState(false)
+  const pathname = useLocation().pathname
+  const showBurger = !['/register', '/login', '/join', '/customer/'].some(route =>
+    pathname.includes(route),
+  )
 
   const handleSignOut = () => {
-    logout();
-  };
-
+    logout()
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,34 +29,47 @@ export default function Layout() {
       {/* Header */}
       <header className="z-20 container mx-auto px-4 py-2 flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <img src={logoFull} className='max-h-12' />
+          <img src={logoFull} className="max-h-12" />
         </Link>
 
-        {!showBurger
-          ? null
-          : isLoading ? <Loader2 className='animate-spin text-primary' /> : !isError
-            ? <button onClick={() => setShowModal(!showModal)} className='bg-primary p-2 rounded-full shadow-lg shadow-black/25'>
+        {showBurger ? (
+          isLoading ? (
+            <Loader2 className="animate-spin text-primary" />
+          ) : isError ? (
+            <Link to="/login">
+              <button className="bg-primary-sat px-6 py-1 w-full rounded-full font-semibold shadow-lg shadow-black/30">
+                Login
+              </button>
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowModal(!showModal)}
+              className="bg-primary p-2 rounded-full shadow-lg shadow-black/25"
+            >
               <MenuIcon />
             </button>
-            : <Link to="/login">
-              <button className="bg-primary-sat px-6 py-1 w-full rounded-full font-semibold shadow-lg shadow-black/30">Login</button>
-            </Link>
-        }
+          )
+        ) : null}
       </header>
 
       {/* Menu Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col items-center"
-          onClick={(e) => {
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col items-center"
+          onClick={e => {
             if (e.target === e.currentTarget) {
-              setShowModal(false);
+              setShowModal(false)
             }
-          }}>
-          <div className='container flex justify-end py-3 px-4'>
-            <button onClick={(e) => {
-              e.stopPropagation();
-              setShowModal(!showModal);
-            }} className='bg-primary p-1.5 rounded-full shadow-lg shadow-black/25 self-end border-2 border-white'>
+          }}
+        >
+          <div className="container flex justify-end py-3 px-4">
+            <button
+              onClick={e => {
+                e.stopPropagation()
+                setShowModal(!showModal)
+              }}
+              className="bg-primary p-1.5 rounded-full shadow-lg shadow-black/25 self-end border-2 border-white"
+            >
               <XIcon />
             </button>
           </div>
@@ -75,29 +90,33 @@ export default function Layout() {
                   Analytics
                 </button>
               </Link>
-              <div className='flex flex-col gap-5 mt-12'>
-                <button className="bg-primary-sat px-6 py-1 rounded-full font-medium shadow-lg shadow-black/30"
+              <div className="flex flex-col gap-5 mt-12">
+                <button
+                  className="bg-primary-sat px-6 py-1 rounded-full font-medium shadow-lg shadow-black/30"
                   onClick={() => {
-                    setShowModal(false);
-                    setShowJoin(true);
-                  }}>
+                    setShowModal(false)
+                    setShowJoin(true)
+                  }}
+                >
                   Join Queue
                 </button>
-                {currentUser ?
+                {currentUser ? (
                   <button
                     onClick={() => {
-                      handleSignOut();
-                      setShowModal(false);
+                      handleSignOut()
+                      setShowModal(false)
                     }}
                     className="bg-white border-2 border-red-500 px-6 py-1 rounded-full font-semibold hover:bg-red-50 shadow-md mt-2"
                   >
                     Logout
                   </button>
-                  :
+                ) : (
                   <Link to="/login">
-                    <button className="bg-primary-sat px-6 py-1 w-full rounded-full font-semibold shadow-lg shadow-black/30">Login</button>
+                    <button className="bg-primary-sat px-6 py-1 w-full rounded-full font-semibold shadow-lg shadow-black/30">
+                      Login
+                    </button>
                   </Link>
-                }
+                )}
               </div>
             </div>
           </div>
@@ -106,5 +125,5 @@ export default function Layout() {
 
       <Outlet />
     </div>
-  );
+  )
 }

@@ -1,34 +1,37 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import logoFull from "../assets/logoFull.png"
-import { useLoginMutation } from '@/queries/mutations/useLoginMutation';
-import { displayError } from '@/utils/displayError';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { useLoginMutation } from '@/queries/mutations/useLoginMutation'
+import { displayError } from '@/utils/displayError'
+
+import logoFull from '../assets/logoFull.png'
 
 export default function Login() {
   const { mutateAsync: login, error, isPending } = useLoginMutation()
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const navigate = useNavigate()
 
   // Handle form submission for email/password login
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    await login({ email, password });
-    navigate('/my-queues');
-  };
+    await login({ email, password })
+    navigate('/my-queues')
+  }
   return (
     // Main container with flex layout
     <div className=" flex flex-col justify-center py-4 px-4">
       {/* Logo section */}
       <div>
-        <img src={logoFull} alt="Logo" className='mx-auto' />
+        <img src={logoFull} alt="Logo" className="mx-auto" />
       </div>
       {/* Page title */}
       <div className="mx-auto w-full max-w-md bg-primary rounded-full">
-        <h2 className="my-2 text-center text-2xl font-semibold text-gray-900">Sign in to your account</h2>
+        <h2 className="my-2 text-center text-2xl font-semibold text-gray-900">
+          Sign in to your account
+        </h2>
       </div>
 
       {/* Login form container */}
@@ -53,7 +56,7 @@ export default function Login() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 />
               </div>
@@ -72,7 +75,7 @@ export default function Login() {
                   required
                   minLength={6}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-primary rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 />
               </div>
@@ -82,8 +85,9 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isPending}
-                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-md shadow-black/25 text-base font-semibold bg-primary hover:bg-primary-sat ${isPending ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-md shadow-black/25 text-base font-semibold bg-primary hover:bg-primary-sat ${
+                  isPending ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
               >
                 {isPending ? 'Signing in...' : 'Sign in'}
               </button>
@@ -103,5 +107,5 @@ export default function Login() {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

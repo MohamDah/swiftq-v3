@@ -1,6 +1,8 @@
 import axios from 'axios'
-import { apiUrl } from './apiUrl'
+
 import { LoginProps, LoginResponse, SignupProps } from '@/types/auth'
+
+import { apiUrl } from './apiUrl'
 
 export const TOKEN_KEY = 'accessToken' as const
 
@@ -17,7 +19,11 @@ export async function login({ email, password }: LoginProps): Promise<string> {
 }
 
 export async function signup({ email, password, businessName }: SignupProps): Promise<string> {
-  const { data } = await axios.post<LoginResponse>(`${apiUrl}auth/register`, { email, password, businessName })
+  const { data } = await axios.post<LoginResponse>(`${apiUrl}auth/register`, {
+    email,
+    password,
+    businessName,
+  })
 
   localStorage.setItem(TOKEN_KEY, data[TOKEN_KEY])
 

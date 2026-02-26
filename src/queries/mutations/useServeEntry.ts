@@ -1,15 +1,16 @@
-import axiosInstance from "@/api/axiosInstance";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QueryKeys } from "../queryKeys";
-import { toast } from "react-toastify";
-import { displayError } from "@/utils/displayError";
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
+
+import axiosInstance from '@/api/axiosInstance'
+import { displayError } from '@/utils/displayError'
+
+import { QueryKeys } from '../queryKeys'
 
 export function useServeEntry() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ entryId }: { entryId: string }) => {
-      return axiosInstance.post(`entries/${entryId}/serve`)
-    },
+    mutationFn: ({ entryId }: { entryId: string }) =>
+      axiosInstance.post(`entries/${entryId}/serve`),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: [QueryKeys.CUSTOMER_STATUS] }),
@@ -18,6 +19,6 @@ export function useServeEntry() {
     },
     onError: error => {
       toast.error(displayError(error))
-    }
+    },
   })
 }

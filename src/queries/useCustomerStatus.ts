@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { QueryKeys } from "./queryKeys";
-import { CustomerStatus } from "@/types/api";
-import { getPositionToken } from "@/utils/customerStorage";
-import axiosInstance from "@/api/axiosInstance";
-import { useNavigate } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
+
+import axiosInstance from '@/api/axiosInstance'
+import { CustomerStatus } from '@/types/api'
+import { getPositionToken } from '@/utils/customerStorage'
+
+import { QueryKeys } from './queryKeys'
 
 export function useCustomerStatus(qrCode: string | null) {
   const navigate = useNavigate()
@@ -18,6 +20,6 @@ export function useCustomerStatus(qrCode: string | null) {
     },
     enabled: !!qrCode,
     gcTime: 0,
-    staleTime: 0
+    staleTime: 0,
   })
 }

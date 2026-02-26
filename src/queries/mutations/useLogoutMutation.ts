@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import { logout } from '@/utils/auth'
 
 export function useLogoutMutation() {
@@ -6,7 +7,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: async () => logout(),
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["currentUser"]})
-    }
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+    },
   })
 }

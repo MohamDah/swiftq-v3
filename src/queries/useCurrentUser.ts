@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { UserDto } from '@/types/api'
+
 import axiosInstance from '@/api/axiosInstance'
+import { UserDto } from '@/types/api'
 import { ApiError } from '@/types/ApiError'
+
 import { QueryKeys } from './queryKeys'
 
 export function useCurrentUser() {

@@ -1,13 +1,13 @@
-import { Link } from 'react-router-dom';
-import logoFull from "../assets/logoFull.png";
-import { useState } from 'react';
-import JoinPopup from './_components/JoinPopup';
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+
+import logoFull from '../assets/logoFull.png'
+import JoinPopup from './_components/JoinPopup'
 
 // Home Page
 // Route: /
 export default function Home() {
-
-  const [showJoin, setShowJoin] = useState(false);
+  const [showJoin, setShowJoin] = useState(false)
 
   return (
     <>
@@ -17,7 +17,7 @@ export default function Home() {
       <main className="flex-1">
         <section className="container mx-auto text-center py-16 px-4">
           <div className="flex justify-center items-center mb-4">
-            <img src={logoFull} className='max-h-24' />
+            <img src={logoFull} className="max-h-24" />
           </div>
           <h3 className="text-xl font-bold mb-2">No More Waiting in Line</h3>
           <p className="text-gray-500 font-bold max-w-2xl mx-auto mb-10">
@@ -31,7 +31,9 @@ export default function Home() {
               Join a Queue
             </button>
             <Link to="/create">
-              <button className="bg-primary text-sm font-bold px-3 py-1 rounded-full shadow-lg shadow-black/25">Create a Queue</button>
+              <button className="bg-primary text-sm font-bold px-3 py-1 rounded-full shadow-lg shadow-black/25">
+                Create a Queue
+              </button>
             </Link>
           </div>
         </section>
@@ -49,7 +51,9 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold">Create or Join</h4>
-                  <p className="text-gray-700 text-sm">Businesses create queues. Customers join with a QR code or ID.</p>
+                  <p className="text-gray-700 text-sm">
+                    Businesses create queues. Customers join with a QR code or ID.
+                  </p>
                 </div>
               </div>
 
@@ -60,7 +64,9 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold">Wait Virtually</h4>
-                  <p className="text-gray-700 text-sm">No need to physically wait in line. Do other things while you wait.</p>
+                  <p className="text-gray-700 text-sm">
+                    No need to physically wait in line. Do other things while you wait.
+                  </p>
                 </div>
               </div>
 
@@ -71,7 +77,9 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold">Get Notified</h4>
-                  <p className="text-gray-700 text-sm">Receive a notification when it's your turn to be served.</p>
+                  <p className="text-gray-700 text-sm">
+                    Receive a notification when it's your turn to be served.
+                  </p>
                 </div>
               </div>
             </div>
@@ -97,6 +105,5 @@ export default function Home() {
         </div>
       </footer>
     </>
-
-  );
+  )
 }

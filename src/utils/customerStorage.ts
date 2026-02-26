@@ -1,16 +1,13 @@
-import { CustomerSessions } from "@/types/api";
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+import { CustomerSessions } from '@/types/api'
 
 export const CUSTOMER_STORAGE_KEY = 'queue_history'
 
-const getAllPositions = (): CustomerSessions => {
-  return JSON.parse(localStorage.getItem(CUSTOMER_STORAGE_KEY) || '{}')
-}
+const getAllPositions = (): CustomerSessions =>
+  JSON.parse(localStorage.getItem(CUSTOMER_STORAGE_KEY) || '{}')
 
 const savePositions = (positions: CustomerSessions) => {
-  localStorage.setItem(
-    CUSTOMER_STORAGE_KEY,
-    JSON.stringify(positions)
-  )
+  localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(positions))
 }
 
 export const getPositionToken = (qrCode: string) => {

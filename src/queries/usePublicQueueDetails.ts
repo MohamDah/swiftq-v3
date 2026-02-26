@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { QueryKeys } from "./queryKeys";
-import axiosInstance from "@/api/axiosInstance";
-import { PublicQueueDetails } from "@/types/api";
+import { useQuery } from '@tanstack/react-query'
+
+import axiosInstance from '@/api/axiosInstance'
+import { PublicQueueDetails } from '@/types/api'
+
+import { QueryKeys } from './queryKeys'
 
 export function usePublicQueueDetailsQuery(qrCode: string | null) {
   return useQuery({
@@ -10,6 +12,6 @@ export function usePublicQueueDetailsQuery(qrCode: string | null) {
       const { data } = await axiosInstance.get<PublicQueueDetails>(`queues/${qrCode}`)
       return data
     },
-    enabled: !!qrCode
+    enabled: !!qrCode,
   })
 }
