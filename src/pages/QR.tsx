@@ -17,7 +17,7 @@ export default function QR() {
   const [copied, setCopied] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
 
-  const joinLink = `${globalThis.location.origin}/join/${queueId}`
+  const joinLink = `${globalThis.location.origin}/join/${queue?.qrCode}`
 
   // Copy join link to clipboard
   const copyToClipboard = () => {
