@@ -50,6 +50,7 @@ export interface Customer {
   status: QueueEntryStatus;
   joinedAt: string;
   calledAt: string | null;
+  estimatedWaitTime: number;
 }
 
 export type CustomerSessions = Record<string, string | undefined>
