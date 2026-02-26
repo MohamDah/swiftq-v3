@@ -6,7 +6,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ConfirmationModal from '@/components/modals/Confirmation'
 import { RequestNotifications } from '@/components/RequestNotifications'
 import { useAudio } from '@/hooks/useAudio'
-import { useCustomerES } from '@/hooks/useCustomerES'
+import { useCustomerSocket } from '@/hooks/useCustomerSocket'
 import { useCancelEntryMutation } from '@/queries/mutations/useCancelEntry'
 import { useCustomerStatus } from '@/queries/useCustomerStatus'
 
@@ -18,7 +18,7 @@ export default function CustomerView() {
   const navigate = useNavigate()
   const { playAudio } = useAudio('/notification-sound.mp3')
 
-  useCustomerES({
+  useCustomerSocket({
     qrCode,
     sessionToken: status?.sessionToken,
     onMessage: data => {

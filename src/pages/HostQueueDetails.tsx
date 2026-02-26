@@ -6,7 +6,7 @@ import ErrorComponent from '@/components/ErrorComponent'
 import QueueEntryCard from '@/components/host/QueueEntryCard'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ConfirmationModal from '@/components/modals/Confirmation'
-import { useHostES } from '@/hooks/useHostES'
+import { useHostSocket } from '@/hooks/useHostSocket'
 import { useDeleteQueueMutation } from '@/queries/mutations/useDeleteQueue'
 import { useUpdateQueueMutation } from '@/queries/mutations/useUpdateQueue'
 import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails'
@@ -20,7 +20,7 @@ export default function HostQueueDetails() {
   const { mutateAsync: deleteQueue, isPending: isDeleting } = useDeleteQueueMutation()
   const { mutateAsync: updateQueue, isPending: isUpdating } = useUpdateQueueMutation()
 
-  useHostES({ queueId })
+  useHostSocket({ queueId })
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 

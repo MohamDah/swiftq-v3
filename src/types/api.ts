@@ -87,8 +87,15 @@ export interface UpdateEntryDto {
   status?: QueueEntryStatus
 }
 
-export interface CustomerEventDto {
-  type: 'QUEUE_ADVANCED' | 'STATUS_CHANGE' | 'CALL'
+export interface EntryUpdatePayload {
+  type: 'QUEUE_ADVANCED' | 'CALL'
+  displayNumber?: string
+}
+
+export interface QueueUpdatePayload {
+  type: 'ENTRY_JOINED' | 'QUEUE_ADVANCED' | 'QUEUE_UPDATED'
+  currentSize?: number
+  estimatedWaitTime?: number
 }
 
 export type TimeFilter = 'today' | 'yesterday' | 'week' | 'month' | 'all'

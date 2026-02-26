@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { useHostES } from '@/hooks/useHostES'
+import { useHostSocket } from '@/hooks/useHostSocket'
 import { useHostQueueDetailsQuery } from '@/queries/useHostQueueDetails'
 import { displayError } from '@/utils/displayError'
 
@@ -12,7 +12,7 @@ export default function QR() {
   const { queueId } = useParams<{ queueId: string }>()
   const navigate = useNavigate()
   const { data: queue, isLoading, error } = useHostQueueDetailsQuery(queueId || '')
-  useHostES({ queueId })
+  useHostSocket({ queueId })
 
   const [copied, setCopied] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
