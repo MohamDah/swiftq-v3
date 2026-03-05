@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import Skeleton from '@/components/Skeleton'
 import { useHostQueuesQuery } from '@/queries/useHostQueuesQuery'
 
-import HostQueueCard from '../_components/HostQueueCard'
+import HostQueueCard from '../components/HostQueueCard'
 
 // Main component for displaying the user's created queues
 export default function HostQueues() {

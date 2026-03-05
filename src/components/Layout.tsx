@@ -6,7 +6,7 @@ import { useLogoutMutation } from '@/queries/mutations/useLogoutMutation'
 import { useCurrentUser } from '@/queries/useCurrentUser'
 
 import logoFull from '../assets/logoFull.png'
-import JoinPopup from '../pages/_components/JoinPopup'
+import JoinPopup from './JoinPopup'
 
 export default function Layout() {
   const { data: currentUser, isLoading, isError } = useCurrentUser()

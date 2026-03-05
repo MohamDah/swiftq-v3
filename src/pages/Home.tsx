@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import logoFull from '../assets/logoFull.png'
-import JoinPopup from './_components/JoinPopup'
+import JoinPopup from '../components/JoinPopup'
 
 // Home Page
 // Route: /

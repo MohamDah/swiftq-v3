@@ -2,8 +2,8 @@ import { Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import raysGreen from '../../assets/raysGreen.png'
-import QRScanner from '../../components/QRScanner'
+import raysGreen from '../assets/raysGreen.png'
+import QRScanner from '../components/QRScanner'
 
 interface JoinPopupProps {
   onClose: () => void
