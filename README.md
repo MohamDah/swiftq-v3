@@ -26,10 +26,15 @@ SwiftQ is a modern web-based queue management system designed to streamline wait
 ## Technologies Used
 
 - **Frontend**: React with TypeScript, Tailwind CSS
-- **Backend**: Firebase (Authentication, Firestore, Cloud Functions)
+- **Backend**: Dedicated REST API with JWT authentication
+- **Real-time**: Socket.io for live queue updates
+- **HTTP Client**: Axios with request interceptors
+- **Server State**: TanStack React Query
 - **Routing**: React Router v7
+- **Forms**: React Hook Form
 - **UI Components**: Custom components with Tailwind
 - **QR Code**: qrcode.react for generation
+- **Push Notifications**: Firebase Cloud Messaging (FCM)
 - **Notifications**: Browser notifications and audio alerts
 
 ## Live Site:
@@ -41,14 +46,14 @@ SwiftQ is a modern web-based queue management system designed to streamline wait
 
 - Node.js (v18 or higher recommended)
 - npm or yarn
-- Firebase account
+- Access to the SwiftQ backend API
 
 ### Installation
 
 1. Clone the repository
 ```bash
-git clone https://github.com/MohamDah/swiftq-v2.git
-cd swiftq-v2
+git clone https://github.com/MohamDah/swiftq-v3.git
+cd swiftq-v3
 ```
 
 2. Install dependencies
@@ -58,24 +63,21 @@ npm install
 yarn
 ```
 
-3. Create a Firebase project
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project
-   - Set up Authentication (Email/Password)
-   - Set up Firestore Database
-
-4. Configure Firebase credentials
+3. Configure environment variables
    - Create a `.env` file in the root directory
-   - Add your Firebase configuration:
+   - Add the backend API URL and Firebase Cloud Messaging credentials:
 
 ```
-VITE_FIREBASE_API_KEY=your-api-key
+VITE_API_URL=your-backend-api-url
+VITE_FIREBASE_API_KEY=your-fcm-api-key
 VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
 VITE_FIREBASE_PROJECT_ID=your-project-id
 VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
 VITE_FIREBASE_APP_ID=your-app-id
 ```
+
+   > Firebase credentials are only required for push notifications (FCM). The backend handles all authentication and data.
 
 5. Start the development server
 ```bash
@@ -130,30 +132,20 @@ yarn build
 ## Project Structure
 
 ```
-foundations-swiftq/
+swiftq-v3/
 ├── public/              # Static assets
 ├── src/
+│   ├── api/             # Axios and Socket.io instances
 │   ├── components/      # Reusable UI components
-│   ├── context/         # React context providers
-│   ├── firebase/        # Firebase configuration and services
-│   │   ├── config.ts    # Firebase initialization
-│   │   ├── schema.ts    # TypeScript interfaces for data models
-│   │   └── services/    # Firebase service functions
+│   ├── fcm/             # Firebase Cloud Messaging (push notifications)
+│   ├── hooks/           # Custom React hooks (socket listeners)
 │   ├── pages/           # Application pages/routes
-│   ├── utils/           # Utility functions
+│   ├── queries/         # TanStack React Query hooks and mutations
+│   ├── routes/          # Route definitions
+│   ├── types/           # TypeScript type definitions
+│   ├── utils/           # Utility functions and auth helpers
 │   ├── App.tsx          # Main app component with routing
 │   └── main.tsx         # Entry point
 ├── .env                 # Environment variables (not in repo)
 └── package.json         # Project dependencies
 ```
-
-## Team
-
-This project was developed by:
-
-- Mohamed Dahab - Lead Developer & Project Coordinator
-- Josiane Mukeshimana - Frontend Developer & Component Specialist
-- Ihuoma Goodluck Ogbonna - Backend Developer & Firebase Expert
-- Joshua Chukwuebuka Moses - UI Designer & Frontend Implementation
-- Fawziyyah Oke - Project Manager & User Experience Designer
-- Hassan Luqman - Technical Architect & Code Reviewer
