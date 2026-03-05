@@ -1,4 +1,3 @@
-import { formatDistance } from 'date-fns'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
@@ -142,16 +141,14 @@ export default function HostQueueDetails() {
             <div className="bg-primary/60 rounded-lg shadow-md p-4">
               <h3 className=" font-semibold text-gray-900">Average Wait Time</h3>
               <p className="text-2xl font-bold text-green-700 mt-2">
-                {queue.averageServiceTime
-                  ? `${formatDistance(new Date(Date.now() - queue.averageServiceTime), new Date())}`
-                  : 'N/A'}
+                {queue.averageServiceTime ? `${queue.averageServiceTime} mins` : 'N/A'}
               </p>
             </div>
             <div className="bg-primary/60 rounded-lg shadow-md p-4">
               <h3 className=" font-semibold text-gray-900">Est. Total Time</h3>
               <p className="text-2xl font-bold text-green-700 mt-2">
                 {queue.averageServiceTime && queue.entries.length > 0
-                  ? `${formatDistance(new Date(Date.now() - queue.averageServiceTime * queue.entries.length), new Date())}`
+                  ? `${queue.averageServiceTime * queue.entries.length} mins`
                   : 'N/A'}
               </p>
             </div>

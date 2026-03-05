@@ -155,8 +155,7 @@ export default function CustomerView() {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm">Estimated wait:</span>
                 <span className="font-bold">
-                  {Math.ceil((status.peopleAhead + 1) * (status.queue.averageServiceTime || 0))}{' '}
-                  minutes
+                  {(status.peopleAhead + 1) * (status.queue.averageServiceTime || 0)} minutes
                 </span>
               </div>
             )}
