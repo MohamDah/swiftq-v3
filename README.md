@@ -33,7 +33,7 @@ SwiftQ is a modern web-based queue management system designed to streamline wait
 - **Notifications**: Browser notifications and audio alerts
 
 ## Live Site:
-- [SwiftQ - V2](https://swiftq-v2.netlify.app/)
+- [SwiftQ - V3](https://swiftq-v3.netlify.app/)
 
 ## Getting Started
 
